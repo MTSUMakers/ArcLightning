@@ -7,55 +7,57 @@ use futures::future;
 use hyper::rt::{Future, Stream};
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use std::path::PathBuf;
 
 // after this concept is further understood, will switch to 'Either'
 type BoxFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 struct Game {
     id: u8,
-    name: String,
-    description: String,
-    genres: Vec<String>,
-    thumbnail_path: String,
-    exe_path: String,
+    name: PathBuf,
+    description: PathBuf,
+    genres: Vec<PathBuf>,
+    thumbnail_path: PathBuf,
+    exe_path: PathBuf,
 }
 
-//TODO: rename as the router
-fn echo(req: Request<Body>) -> BoxFuture {
+fn router(request: Request<Body>) -> BoxFuture {
 
     let mut games_list: Vec<Game> = Vec::new();
 
     games_list.push(
         Game{
             id: 0,
-            name: "Touhou".to_string(),
-            description: "waifus shooting stuff".to_string(),
-            genres: vec!["bullet hell".to_string()],
-            thumbnail_path: "TEMP_THUMBNAIL_PATH".to_string(),
-            exe_path: r"C:\\Users\THISUSER\RESTOFTHEPATH".to_string(),
+            name: PathBuf::from("Touhou"),
+            description: PathBuf::from("waifus shooting stuff"),
+            genres: vec![PathBuf::from("bullet hell")],
+            thumbnail_path: PathBuf::from("TEMP_THUMBNAIL_PATH"),
+            exe_path: PathBuf::from(r"C:\\Users\THISUSER\RESTOFTHEPATH"),
     });
 
     games_list.push(
         Game{
             id: 1,
-            name: "Melty Blood".to_string(),
-            description: "waifus fighting stuff".to_string(),
-            genres: vec!["anime".to_string(), "2d".to_string(), "fighter".to_string()],
-            thumbnail_path: "TEMP_THUMBNAIL_PATH".to_string(),
-            exe_path: r"C:\\Users\THISUSER\RESTOFTHEPATH".to_string(),
+            name: PathBuf::from("Melty Blood"),
+            description: PathBuf::from("waifus fighting stuff"),
+            genres: vec![PathBuf::from("anime"), 
+                         PathBuf::from("2d"),
+                         PathBuf::from("fighter")],
+            thumbnail_path: PathBuf::from("TEMP_THUMBNAIL_PATH"),
+            exe_path: PathBuf::from(r"C:\\Users\THISUSER\RESTOFTHEPATH"),
     });
 
     let mut response = Response::new(Body::empty());
 
-    match (req.method(), req.uri().path()) {
+    match (request.method(), request.uri().path()) {
         // TODO: get will send over games list
         (&Method::GET, "/") => {
             // TODO: convert a vector of struct "Game" into a single json:
-            *response.body_mut() = Body::from(games_list);
+            *response.body_mut() = Body::from("games will go here");
         }
         // TODO: post will probably figure out which game to launch?
         (&Method::POST, "/echo") => {
-            *response.body_mut() = req.into_body();
+            *response.body_mut() = request.into_body();
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
@@ -70,7 +72,7 @@ fn main() {
 
 
     let server = Server::bind(&addr)
-        .serve(|| service_fn(echo))
+        .serve(|| service_fn(router))
         .map_err(|e| eprintln!("server error: {}", e));
 
 

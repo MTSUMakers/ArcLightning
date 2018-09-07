@@ -1,5 +1,5 @@
 [package]
-name = "server"
+name = "arclightning_backend"
 version = "0.1.0"
 authors = ["sremedios <sam.remedios@gmail.com>"]
 
