@@ -63,7 +63,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_read_toml() {
+    fn test_read_toml(){
         use serde_json::value::Value;
         use std::collections::HashMap;
         use std::fs::File;
