@@ -1,7 +1,9 @@
 extern crate futures;
 extern crate hyper;
-#[macro_use] extern crate serde_derive;
-#[macro_use] extern crate serde_json;
+#[macro_use] 
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 extern crate toml;
 
 use futures::future;
@@ -11,19 +13,18 @@ use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use std::path::PathBuf;
 
 // after this concept is further understood, will switch to 'Either'
-type BoxFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
+type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Game {
-    id: PathBuf,
-    name: PathBuf,
-    description: PathBuf,
-    genre: PathBuf, // TODO: make a vector
+    name: String,
+    description: String,
+    genre: Vec<String>,
     thumbnail_path: PathBuf,
     exe_path: PathBuf,
 }
 
-fn router(request: Request<Body>) -> BoxFuture {
+fn router(request: Request<Body>) -> ResponseFuture {
 
     let mut games_list: Vec<Game> = Vec::new();
 
@@ -31,7 +32,7 @@ fn router(request: Request<Body>) -> BoxFuture {
 
     match (request.method(), request.uri().path()) {
         // TODO: get will send over games list
-        (&Method::GET, "/") => {
+        (&Method::GET, "/api/v1/list_games") => {
             // TODO: convert a vector of struct "Game" into a single json:
             *response.body_mut() = Body::from("games will go here");
         }
@@ -53,7 +54,7 @@ fn main() {
 
     let server = Server::bind(&addr)
         .serve(|| service_fn(router))
-        .map_err(|e| eprintln!("server error: {}", e));
+        .map_err(|err| eprintln!("server error: {}", err));
 
 
     println!("Listening on http://{}", addr);
@@ -61,19 +62,21 @@ fn main() {
 }
 
 
+#[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn test_read_toml() {
 
-        use std::fs::{File};
+        use std::collections::HashMap;
+        use std::fs::File;
         use std::io::Read;
         use serde_json::value::Value;
 
         // Read in a specific file
         let toml_filepath = PathBuf::from(
-            r"C:\Users\Sam\Documents\CSCI_4700\ArcLightning\test_files\test_games.toml");
+            r"test_files\test_games.toml");
         let mut games_toml = String::new();
 
         let mut file = match File::open(&toml_filepath) {
@@ -85,24 +88,21 @@ mod test {
         file.read_to_string(&mut games_toml)
             .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
 
-        let game: Game = match toml::from_str(&games_toml) {
-            Ok(g) => g,
-            Err(e) => panic!("Error while parsing file with toml: {}", e)
-        };
+        let mut games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        println!("{:#?}", games);
 
-
-        println!("{:#?}", game);
-
-        let test_game = 
+        let mut test_games: HashMap<String, Game> = HashMap::new();
+        test_games.insert("touhou_123".to_owned(),
             Game{
-                id: PathBuf::from("touhou_123"),
-                name: PathBuf::from("Touhou"),
-                description: PathBuf::from("bullet hell with waifus"),
-                genre: PathBuf::from("bullet hell"),
+                name: "Touhou".to_owned(),
+                description: "bullet hell with waifus".to_owned(),
+                genre: vec!["bullet hell".to_owned(),
+                            "anime".to_owned(),
+                ],
                 thumbnail_path: PathBuf::from(r"path\to\touhou\thumbnail"),
                 exe_path: PathBuf::from(r"C:\Users\THISUSER\TOUHOU_PATH"),
-        };
+        });
 
-        assert_eq!(game, test_game);
+        assert_eq!(games, test_games);
     }
 }
