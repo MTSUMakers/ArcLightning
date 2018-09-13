@@ -75,20 +75,16 @@ mod test {
         use serde_json::value::Value;
 
         // Read in a specific file
-        let toml_filepath = PathBuf::from(
-            r"test_files\test_games.toml");
+        let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect(); 
         let mut games_toml = String::new();
 
-        let mut file = match File::open(&toml_filepath) {
-            Ok(file) => file,
-            Err(_) => panic!("Could not find .toml file.")
-        };
+        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
 
 
         file.read_to_string(&mut games_toml)
             .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
 
-        let mut games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
         println!("{:#?}", games);
 
         let mut test_games: HashMap<String, Game> = HashMap::new();
@@ -102,6 +98,19 @@ mod test {
                 thumbnail_path: PathBuf::from(r"path\to\touhou\thumbnail"),
                 exe_path: PathBuf::from(r"C:\Users\THISUSER\TOUHOU_PATH"),
         });
+
+        test_games.insert("melty_blood".to_owned(),
+            Game{
+                name: "Melty Blood".to_owned(),
+                description: "fighter with waifus".to_owned(),
+                genre: vec!["fighter".to_owned(),
+                            "anime".to_owned(),
+                            "2d".to_owned(),
+                ],
+                thumbnail_path: PathBuf::from(r"path\to\melty_blood\thumbnail"),
+                exe_path: PathBuf::from(r"C:\Users\THISUSER\MELTY_BLOOD_PATH"),
+        });
+
 
         assert_eq!(games, test_games);
     }
