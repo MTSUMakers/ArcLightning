@@ -1,7 +1,8 @@
 extern crate futures;
 extern crate hyper;
-#[macro_use]
-extern crate serde_json;
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate serde_json;
+extern crate toml;
 
 use futures::future;
 use hyper::rt::{Future, Stream};
@@ -12,11 +13,12 @@ use std::path::PathBuf;
 // after this concept is further understood, will switch to 'Either'
 type BoxFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Game {
-    id: u8,
+    id: PathBuf,
     name: PathBuf,
     description: PathBuf,
-    genres: Vec<PathBuf>,
+    genre: PathBuf, // TODO: make a vector
     thumbnail_path: PathBuf,
     exe_path: PathBuf,
 }
@@ -24,28 +26,6 @@ struct Game {
 fn router(request: Request<Body>) -> BoxFuture {
 
     let mut games_list: Vec<Game> = Vec::new();
-
-    games_list.push(
-        Game{
-            id: 0,
-            name: PathBuf::from("Touhou"),
-            description: PathBuf::from("waifus shooting stuff"),
-            genres: vec![PathBuf::from("bullet hell")],
-            thumbnail_path: PathBuf::from("TEMP_THUMBNAIL_PATH"),
-            exe_path: PathBuf::from(r"C:\\Users\THISUSER\RESTOFTHEPATH"),
-    });
-
-    games_list.push(
-        Game{
-            id: 1,
-            name: PathBuf::from("Melty Blood"),
-            description: PathBuf::from("waifus fighting stuff"),
-            genres: vec![PathBuf::from("anime"), 
-                         PathBuf::from("2d"),
-                         PathBuf::from("fighter")],
-            thumbnail_path: PathBuf::from("TEMP_THUMBNAIL_PATH"),
-            exe_path: PathBuf::from(r"C:\\Users\THISUSER\RESTOFTHEPATH"),
-    });
 
     let mut response = Response::new(Body::empty());
 
@@ -78,4 +58,51 @@ fn main() {
 
     println!("Listening on http://{}", addr);
     hyper::rt::run(server);
+}
+
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_read_toml() {
+
+        use std::fs::{File};
+        use std::io::Read;
+        use serde_json::value::Value;
+
+        // Read in a specific file
+        let toml_filepath = PathBuf::from(
+            r"C:\Users\Sam\Documents\CSCI_4700\ArcLightning\test_files\test_games.toml");
+        let mut games_toml = String::new();
+
+        let mut file = match File::open(&toml_filepath) {
+            Ok(file) => file,
+            Err(_) => panic!("Could not find .toml file.")
+        };
+
+
+        file.read_to_string(&mut games_toml)
+            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
+
+        let game: Game = match toml::from_str(&games_toml) {
+            Ok(g) => g,
+            Err(e) => panic!("Error while parsing file with toml: {}", e)
+        };
+
+
+        println!("{:#?}", game);
+
+        let test_game = 
+            Game{
+                id: PathBuf::from("touhou_123"),
+                name: PathBuf::from("Touhou"),
+                description: PathBuf::from("bullet hell with waifus"),
+                genre: PathBuf::from("bullet hell"),
+                thumbnail_path: PathBuf::from(r"path\to\touhou\thumbnail"),
+                exe_path: PathBuf::from(r"C:\Users\THISUSER\TOUHOU_PATH"),
+        };
+
+        assert_eq!(game, test_game);
+    }
 }
