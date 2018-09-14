@@ -15,7 +15,9 @@ use std::path::PathBuf;
 // after this concept is further understood, will switch to 'Either'
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+// using PartialEq for unit tests
+// Using clone in a unit test atm.  Might not be necessary
 struct Game {
     name: String,
     description: String,
@@ -63,6 +65,35 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_games_endpoint() {
+        use serde_json::value::Value;
+        use std::collections::HashMap;
+        use std::fs::File;
+        use std::io::Read;
+        use std::sync::{Arc, Mutex};
+
+        // Read in a specific file
+        let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+        let mut games_toml = String::new();
+
+        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
+
+        file.read_to_string(&mut games_toml)
+            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
+
+        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        let games_clone = games.clone();
+
+        // wrap all the games in a mutex
+        //
+        // note that this moves games into the mutex
+        let games_data = Arc::new(Mutex::new(games));
+
+        assert_eq!(games_clone, *games_data.lock().unwrap());
+        
+    }
+
+    #[test]
     fn test_read_toml() {
         use serde_json::value::Value;
         use std::collections::HashMap;
@@ -79,7 +110,6 @@ mod test {
             .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
 
         let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
-        println!("{:#?}", games);
 
         let mut test_games: HashMap<String, Game> = HashMap::new();
         test_games.insert(
