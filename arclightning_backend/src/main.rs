@@ -32,14 +32,8 @@ fn router(request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
 
     match (request.method(), request.uri().path()) {
-        // TODO: get will send over games list
         (&Method::GET, "/api/v1/list_games") => {
-            // TODO: convert a vector of struct "Game" into a single json:
             *response.body_mut() = Body::from("games will go here");
-        }
-        // TODO: post will probably figure out which game to launch?
-        (&Method::POST, "/echo") => {
-            *response.body_mut() = request.into_body();
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
@@ -65,7 +59,76 @@ mod test {
     use super::*;
 
     #[test]
+    // TODO
+    // not implemented yet, test sending the games as a json as payload
+    // Don't know how to assert here, if feasible
     fn test_games_endpoint() {
+        use serde_json::value::Value;
+        use std::collections::HashMap;
+        use std::fs::File;
+        use std::io::Read;
+        use std::sync::{Arc, Mutex};
+
+        // Read in games file
+        let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+        let mut games_toml = String::new();
+        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
+        file.read_to_string(&mut games_toml)
+            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
+        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+
+        // host server
+        /*
+        let addr = ([127, 0, 0, 1], 3000).into();
+        let server = Server::bind(&addr)
+            // putting the service function here for testing
+            // TODO: how will this function have access to the games hashmap??
+            .serve(|| service_fn())
+            .map_err(|err| eprintln!("server error: {}", err));
+
+        println!("Listening on http://{}", addr);
+
+        let mut test_json = r#"{"touhou_123":{"name":"Touhou","description":"bullet hell with waifus","genre":["bullet hell","anime"],"thumbnail_path":"path/to/touhou/thumbnail","exe_path":"C:\\Users\\THISUSER\\TOUHOU_PATH"},"melty_blood":{"name":"Melty Blood","description":"fighter with waifus","genre":["fighter","anime","2d"],"thumbnail_path":"path/to/melty_blood/thumbnail","exe_path":"C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"}}"#;
+
+        assert_eq!(json_object, test_json);
+        hyper::rt::run(server);
+        */
+    }
+
+    #[test]
+    fn test_json_serialization() {
+        use serde_json::value::Value;
+        use std::collections::HashMap;
+        use std::fs::File;
+        use std::io::Read;
+        use std::sync::{Arc, Mutex};
+
+        // Read in a specific file
+        let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+        let mut games_toml = String::new();
+
+        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
+
+        file.read_to_string(&mut games_toml)
+            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
+
+        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+
+        // serialize as json
+        let json_object = serde_json::to_string(&games).unwrap();
+
+        // test json
+        // Sorry it's so gross lol
+        let mut test_json = r#"{"touhou_123":{"name":"Touhou","description":"bullet hell with waifus","genre":["bullet hell","anime"],"thumbnail_path":"path/to/touhou/thumbnail","exe_path":"C:\\Users\\THISUSER\\TOUHOU_PATH"},"melty_blood":{"name":"Melty Blood","description":"fighter with waifus","genre":["fighter","anime","2d"],"thumbnail_path":"path/to/melty_blood/thumbnail","exe_path":"C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"}}"#;
+
+        // assert
+        assert_eq!(json_object, test_json);
+
+    }
+
+
+    #[test]
+    fn test_games_serialization() {
         use serde_json::value::Value;
         use std::collections::HashMap;
         use std::fs::File;
