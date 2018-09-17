@@ -115,14 +115,23 @@ mod test {
         let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
 
         // serialize as json
-        let json_object = serde_json::to_string(&games).unwrap();
+        let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
+        let json_object_melty_blood = serde_json::to_string(&games.get("melty_blood")).unwrap();
 
-        // test json
-        // Sorry it's so gross lol
-        let mut test_json = r#"{"touhou_123":{"name":"Touhou","description":"bullet hell with waifus","genre":["bullet hell","anime"],"thumbnail_path":"path/to/touhou/thumbnail","exe_path":"C:\\Users\\THISUSER\\TOUHOU_PATH"},"melty_blood":{"name":"Melty Blood","description":"fighter with waifus","genre":["fighter","anime","2d"],"thumbnail_path":"path/to/melty_blood/thumbnail","exe_path":"C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"}}"#;
+        // test cases separately to get around the nondeterministic order for hashmap 
+        let mut test_json_touhou = "{\"name\":\"Touhou\",\
+                                    \"description\":\"bullet hell with waifus\",\
+                                    \"genre\":[\"bullet hell\",\"anime\"],\
+                                    \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
+                                    \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
+        let mut test_json_mb = "{\"name\":\"Melty Blood\",\
+                                 \"description\":\"fighter with waifus\",\
+                                 \"genre\":[\"fighter\",\"anime\",\"2d\"],\
+                                 \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                                 \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
-        // assert
-        assert_eq!(json_object, test_json);
+        assert_eq!(json_object_touhou, test_json_touhou);
+        assert_eq!(json_object_melty_blood, test_json_mb);
 
     }
 
