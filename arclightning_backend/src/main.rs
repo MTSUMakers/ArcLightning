@@ -21,7 +21,7 @@ type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + 
 struct Game {
     name: String,
     description: String,
-    genre: Vec<String>,
+    genres: Vec<String>,
     thumbnail_path: PathBuf,
     exe_path: PathBuf,
 }
@@ -88,7 +88,7 @@ mod test {
 
         println!("Listening on http://{}", addr);
 
-        let mut test_json = r#"{"touhou_123":{"name":"Touhou","description":"bullet hell with waifus","genre":["bullet hell","anime"],"thumbnail_path":"path/to/touhou/thumbnail","exe_path":"C:\\Users\\THISUSER\\TOUHOU_PATH"},"melty_blood":{"name":"Melty Blood","description":"fighter with waifus","genre":["fighter","anime","2d"],"thumbnail_path":"path/to/melty_blood/thumbnail","exe_path":"C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"}}"#;
+        let mut test_json = r#"{"touhou_123":{"name":"Touhou","description":"bullet hell with waifus","genres":["bullet hell","anime"],"thumbnail_path":"path/to/touhou/thumbnail","exe_path":"C:\\Users\\THISUSER\\TOUHOU_PATH"},"melty_blood":{"name":"Melty Blood","description":"fighter with waifus","genres":["fighter","anime","2d"],"thumbnail_path":"path/to/melty_blood/thumbnail","exe_path":"C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"}}"#;
 
         assert_eq!(json_object, test_json);
         hyper::rt::run(server);
@@ -121,12 +121,12 @@ mod test {
         // test cases separately to get around the nondeterministic order for hashmap 
         let mut test_json_touhou = "{\"name\":\"Touhou\",\
                                     \"description\":\"bullet hell with waifus\",\
-                                    \"genre\":[\"bullet hell\",\"anime\"],\
+                                    \"genres\":[\"bullet hell\",\"anime\"],\
                                     \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
                                     \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
         let mut test_json_mb = "{\"name\":\"Melty Blood\",\
                                  \"description\":\"fighter with waifus\",\
-                                 \"genre\":[\"fighter\",\"anime\",\"2d\"],\
+                                 \"genres\":[\"fighter\",\"anime\",\"2d\"],\
                                  \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
                                  \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
@@ -189,7 +189,7 @@ mod test {
             Game {
                 name: "Touhou".to_owned(),
                 description: "bullet hell with waifus".to_owned(),
-                genre: vec!["bullet hell".to_owned(), "anime".to_owned()],
+                genres: vec!["bullet hell".to_owned(), "anime".to_owned()],
                 thumbnail_path: PathBuf::from(r"path\to\touhou\thumbnail"),
                 exe_path: PathBuf::from(r"C:\Users\THISUSER\TOUHOU_PATH"),
             },
@@ -200,7 +200,7 @@ mod test {
             Game {
                 name: "Melty Blood".to_owned(),
                 description: "fighter with waifus".to_owned(),
-                genre: vec!["fighter".to_owned(), "anime".to_owned(), "2d".to_owned()],
+                genres: vec!["fighter".to_owned(), "anime".to_owned(), "2d".to_owned()],
                 thumbnail_path: PathBuf::from(r"path\to\melty_blood\thumbnail"),
                 exe_path: PathBuf::from(r"C:\Users\THISUSER\MELTY_BLOOD_PATH"),
             },
