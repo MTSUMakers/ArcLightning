@@ -1,13 +1,39 @@
-<!doctype html>
 
-<html>
-  <head>
-	<script type="text/javascript" src = "games.js"></script>
-	<!--bootstrap-->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> 
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">  
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <!-- production version, optimized for size and speed -->
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     </head>
     <body>
-	<script>loadGames(); </script>
-   </div>
-  </body>
+        <div class="container-fluid">
+            <div class="row" id="games">
+                <div class="col-sm-4" style="background-color: yellow; height:33vh; background-color:black; padding: 1px;" v-for="item in items">
+		<img style="position:relative;height:100%; width:100%;"src v-bind:src= "item.thumbnail_path"  />
+                	
+		</div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#games',
+            data: {
+                items: [
+                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/smashbros.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
+                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhou.jpg', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
+                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBlood.png', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
+                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/smashbros.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
+		]
+            },
+        });
+    </script>
 </html>
