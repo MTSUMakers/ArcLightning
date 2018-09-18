@@ -33,19 +33,16 @@ struct Game {
 }
 
 fn router(request: Request<Body>) -> ResponseFuture {
-    let mut games_list: Vec<Game> = Vec::new();
-
     let mut response = Response::new(Body::empty());
 
     match (request.method(), request.uri().path()) {
         (&Method::GET, "/api/v1/list_games") => {
-            *response.body_mut() = Body::from("games will go here");
+            *response.body_mut() = Body::from("test");
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
         }
     }
-
     Box::new(future::ok(response))
 }
 
@@ -58,6 +55,14 @@ fn toml_to_hashmap(toml_filepath: PathBuf) -> HashMap<String, Game> {
 }
 
 fn main() {
+    // Read initial games toml config
+    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+
+    // Store games locally on server
+    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
+    let games_data = Arc::new(Mutex::new(games.clone()));
+
+    // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
     let server = Server::bind(&addr)
@@ -101,8 +106,7 @@ mod test {
 
         assert_eq!(json_object, test_json);
         hyper::rt::run(server);
-        */
-    }
+        */    }
 
     #[test]
     fn test_json_serialization() {
@@ -120,23 +124,21 @@ mod test {
         let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
         let json_object_melty_blood = serde_json::to_string(&games.get("melty_blood")).unwrap();
 
-        // test cases separately to get around the nondeterministic order for hashmap 
+        // test cases separately to get around the nondeterministic order for hashmap
         let mut test_json_touhou = "{\"name\":\"Touhou\",\
                                     \"description\":\"bullet hell with waifus\",\
                                     \"genres\":[\"bullet hell\",\"anime\"],\
                                     \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
                                     \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
         let mut test_json_mb = "{\"name\":\"Melty Blood\",\
-                                 \"description\":\"fighter with waifus\",\
-                                 \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                                 \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
-                                 \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
+                                \"description\":\"fighter with waifus\",\
+                                \"genres\":[\"fighter\",\"anime\",\"2d\"],\
+                                \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
         assert_eq!(json_object_touhou, test_json_touhou);
         assert_eq!(json_object_melty_blood, test_json_mb);
-
     }
-
 
     #[test]
     fn test_games_serialization() {
@@ -158,7 +160,6 @@ mod test {
         let games_data = Arc::new(Mutex::new(games));
 
         assert_eq!(games_clone, *games_data.lock().unwrap());
-        
     }
 
     #[test]
