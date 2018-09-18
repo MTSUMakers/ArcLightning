@@ -7,16 +7,22 @@ extern crate serde_json;
 extern crate toml;
 
 use futures::future;
+
 use hyper::rt::{Future, Stream};
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
+
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 // after this concept is further understood, will switch to 'Either'
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 // using PartialEq for unit tests
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 // Using clone in a unit test atm.  Might not be necessary
 struct Game {
     name: String,
@@ -43,6 +49,14 @@ fn router(request: Request<Body>) -> ResponseFuture {
     Box::new(future::ok(response))
 }
 
+fn toml_to_hashmap(toml_filepath: PathBuf) -> HashMap<String, Game> {
+    let mut games_toml = String::new();
+    let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
+    file.read_to_string(&mut games_toml)
+        .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
+    toml::from_str(&games_toml).unwrap()
+}
+
 fn main() {
     let addr = ([127, 0, 0, 1], 3000).into();
 
@@ -64,18 +78,13 @@ mod test {
     // Don't know how to assert here, if feasible
     fn test_games_endpoint() {
         use serde_json::value::Value;
-        use std::collections::HashMap;
         use std::fs::File;
         use std::io::Read;
         use std::sync::{Arc, Mutex};
 
         // Read in games file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let mut games_toml = String::new();
-        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
-        file.read_to_string(&mut games_toml)
-            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
-        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
 
         // host server
         /*
@@ -105,14 +114,7 @@ mod test {
 
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let mut games_toml = String::new();
-
-        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
-
-        file.read_to_string(&mut games_toml)
-            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
-
-        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
 
         // serialize as json
         let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
@@ -146,14 +148,8 @@ mod test {
 
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let mut games_toml = String::new();
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
 
-        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
-
-        file.read_to_string(&mut games_toml)
-            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
-
-        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
         let games_clone = games.clone();
 
         // wrap all the games in a mutex
@@ -174,14 +170,7 @@ mod test {
 
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let mut games_toml = String::new();
-
-        let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
-
-        file.read_to_string(&mut games_toml)
-            .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
-
-        let games: HashMap<String, Game> = toml::from_str(&games_toml).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
 
         let mut test_games: HashMap<String, Game> = HashMap::new();
         test_games.insert(
