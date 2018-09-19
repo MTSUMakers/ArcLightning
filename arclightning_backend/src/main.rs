@@ -7,14 +7,12 @@ extern crate serde_json;
 extern crate toml;
 
 use futures::future;
-
 use hyper::rt::{Future, Stream};
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
-
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Error, ErrorKind, Read};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -22,8 +20,8 @@ use std::sync::{Arc, Mutex};
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 // using PartialEq for unit tests
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 // Using clone in a unit test atm.  Might not be necessary
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 struct Game {
     name: String,
     description: String,
@@ -46,12 +44,12 @@ fn router(request: Request<Body>) -> ResponseFuture {
     Box::new(future::ok(response))
 }
 
-fn toml_to_hashmap(toml_filepath: PathBuf) -> HashMap<String, Game> {
+fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, Error> {
     let mut games_toml = String::new();
-    let mut file = File::open(&toml_filepath).expect("Could not find .toml file");
-    file.read_to_string(&mut games_toml)
-        .unwrap_or_else(|err| panic!("Error while reading .toml file: [{}]", err));
-    toml::from_str(&games_toml).unwrap()
+    let mut file = File::open(&toml_filepath)?;
+    file.read_to_string(&mut games_toml)?;
+
+    toml::from_str(&games_toml).map_err(|e| Error::new(ErrorKind::Other, e.to_string()))
 }
 
 fn main() {
@@ -59,7 +57,7 @@ fn main() {
     let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
 
     // Store games locally on server
-    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
+    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
     let games_data = Arc::new(Mutex::new(games.clone()));
 
     // Host server
