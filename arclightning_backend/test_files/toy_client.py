@@ -3,12 +3,11 @@ import json
 
 url = "http://127.0.0.1:3000"
 payload = "/api/v1/list_games"
-print(requests.get(url).text)
-
-r = requests.post(url+payload, data="foobar")
-print(r.text)
-print(r.status_code)
 
 r = requests.get(url+payload)
-print(r.text)
-print(r.status_code)
+games = json.loads(r.text)
+
+for k, v in games.items():
+    print(k, '\t', v)
+
+print("Exited with status code:", r.status_code)

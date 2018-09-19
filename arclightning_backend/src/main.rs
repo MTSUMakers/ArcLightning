@@ -2,12 +2,11 @@ extern crate futures;
 extern crate hyper;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate serde_json;
 extern crate toml;
 
 use futures::future;
-use hyper::rt::{Future, Stream};
+use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
@@ -30,12 +29,13 @@ struct Game {
     exe_path: PathBuf,
 }
 
-fn router(request: Request<Body>) -> ResponseFuture {
+fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
 
     match (request.method(), request.uri().path()) {
         (&Method::GET, "/api/v1/list_games") => {
-            *response.body_mut() = Body::from("test");
+            *response.body_mut() =
+                Body::from(serde_json::to_string(&*games_arc.lock().unwrap()).unwrap());
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
@@ -64,8 +64,13 @@ fn main() {
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
+    let new_service = move || {
+        let games_data = games_data.clone();
+        service_fn(move |request| router(&games_data, request))
+    };
+
     let server = Server::bind(&addr)
-        .serve(|| service_fn(router))
+        .serve(new_service)
         .map_err(|err| eprintln!("server error: {}", err));
 
     println!("Listening on http://{}", addr);
