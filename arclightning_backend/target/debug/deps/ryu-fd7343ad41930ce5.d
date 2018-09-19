@@ -1,0 +1,15 @@
+C:\Users\Sam\Documents\CSCI_4700\server\target\debug\deps\libryu-fd7343ad41930ce5.rlib: C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\lib.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\buffer\mod.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\common.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_full_table.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_intrinsics.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\digit_table.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\f2s.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mod.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\exponent.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mantissa.rs
+
+C:\Users\Sam\Documents\CSCI_4700\server\target\debug\deps\ryu-fd7343ad41930ce5.d: C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\lib.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\buffer\mod.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\common.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_full_table.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_intrinsics.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\digit_table.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\f2s.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mod.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\exponent.rs C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mantissa.rs
+
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\lib.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\buffer\mod.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\common.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_full_table.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\d2s_intrinsics.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\digit_table.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\f2s.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mod.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\exponent.rs:
+C:\Users\Sam\.cargo\registry\src\github.com-1ecc6299db9ec823\ryu-0.2.6\src\pretty\mantissa.rs:
