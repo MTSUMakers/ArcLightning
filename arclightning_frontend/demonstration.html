@@ -71,13 +71,12 @@
           'demo_videos/Demo2_ddr.webm',
           'demo_videos/Demo3_tekken.webm'
         ],
-        video_count: 0
+        cur_video: 0
       },
       methods: {
         demoRun: function () {
-          this.video_count++
-          if (this.video_count == this.videos.length) this.video_count = 0
-          this.$refs.demovid.src = this.videos[this.video_count]
+          this.cur_video = (this.cur_video + 1) % this.videos.length
+          this.$refs.demovid.src = this.videos[this.cur_video]
           this.$refs.demovid.play()
         }
       }
