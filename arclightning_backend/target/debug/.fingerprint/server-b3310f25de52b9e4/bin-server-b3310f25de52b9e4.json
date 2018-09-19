@@ -1,1 +1,0 @@
-{"rustc":15424346658487105028,"features":"[]","target":14633598937674371442,"profile":10430409311842936734,"path":1036222786711178230,"deps":[["hyper v0.12.9","hyper",17982459196308333816]],"local":[{"MtimeBased":[[1536351394,928375700],".fingerprint\\server-b3310f25de52b9e4\\dep-bin-server-b3310f25de52b9e4"]}],"rustflags":[],"edition":"Edition2015"}
