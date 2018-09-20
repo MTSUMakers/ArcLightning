@@ -5,6 +5,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
+mod password;
+
 use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
@@ -82,6 +84,16 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_check_password() {
+        let password: String = "this_IS my_P455W0RD".to_owned();
+        let hashed_password = String::from_utf8_lossy(
+            password::blake2b(64, &[], "this_IS my_P455W0RD".to_owned().as_bytes()).as_bytes(),
+        ).to_string();
+
+        assert!(password::check_password(password, hashed_password));
+    }
+
+    #[test]
     fn test_json_serialization() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
@@ -93,15 +105,15 @@ mod test {
 
         // test cases separately to get around the nondeterministic order for hashmap
         let test_json_touhou = "{\"name\":\"Touhou\",\
-                                    \"description\":\"bullet hell with waifus\",\
-                                    \"genres\":[\"bullet hell\",\"anime\"],\
-                                    \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
-                                    \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
+                                \"description\":\"bullet hell with waifus\",\
+                                \"genres\":[\"bullet hell\",\"anime\"],\
+                                \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
+                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
         let test_json_mb = "{\"name\":\"Melty Blood\",\
-                                \"description\":\"fighter with waifus\",\
-                                \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                                \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
-                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
+                            \"description\":\"fighter with waifus\",\
+                            \"genres\":[\"fighter\",\"anime\",\"2d\"],\
+                            \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                            \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
         assert_eq!(json_object_touhou, test_json_touhou);
         assert_eq!(json_object_melty_blood, test_json_mb);
