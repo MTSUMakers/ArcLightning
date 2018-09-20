@@ -11,7 +11,7 @@ use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Error, ErrorKind, Read};
+use std::io::{self, ErrorKind, Read};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -44,13 +44,13 @@ fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>)
     Box::new(future::ok(response))
 }
 
-fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, Error> {
+fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::Error> {
     let mut games_toml = String::new();
     let mut file = File::open(&toml_filepath)?;
     file.read_to_string(&mut games_toml)?;
 
     // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|e| Error::new(ErrorKind::Other, e.to_string()))
+    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))
 }
 
 fn main() {
@@ -85,19 +85,19 @@ mod test {
     fn test_json_serialization() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
         // serialize as json
         let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
         let json_object_melty_blood = serde_json::to_string(&games.get("melty_blood")).unwrap();
 
         // test cases separately to get around the nondeterministic order for hashmap
-        let mut test_json_touhou = "{\"name\":\"Touhou\",\
+        let test_json_touhou = "{\"name\":\"Touhou\",\
                                     \"description\":\"bullet hell with waifus\",\
                                     \"genres\":[\"bullet hell\",\"anime\"],\
                                     \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
                                     \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
-        let mut test_json_mb = "{\"name\":\"Melty Blood\",\
+        let test_json_mb = "{\"name\":\"Melty Blood\",\
                                 \"description\":\"fighter with waifus\",\
                                 \"genres\":[\"fighter\",\"anime\",\"2d\"],\
                                 \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
@@ -111,7 +111,7 @@ mod test {
     fn test_games_serialization() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
         let games_clone = games.clone();
 
@@ -126,7 +126,7 @@ mod test {
     fn test_read_toml() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath);
+        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
         let mut test_games: HashMap<String, Game> = HashMap::new();
         test_games.insert(
