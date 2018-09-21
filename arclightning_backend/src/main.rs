@@ -50,7 +50,7 @@ fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::
     file.read_to_string(&mut games_toml)?;
 
     // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))
+    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e))
 }
 
 fn main() {
@@ -59,7 +59,7 @@ fn main() {
 
     // Store games locally on server
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
-    let games_data = Arc::new(Mutex::new(games.clone()));
+    let games_data = Arc::new(Mutex::new(games));
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();

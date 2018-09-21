@@ -2,9 +2,9 @@ import requests
 import json
 
 url = "http://127.0.0.1:3000"
-payload = "/api/v1/list_games"
+path = "/api/v1/list_games"
 
-r = requests.get(url+payload)
+r = requests.get(url+path)
 games = json.loads(r.text)
 
 for k, v in games.items():
