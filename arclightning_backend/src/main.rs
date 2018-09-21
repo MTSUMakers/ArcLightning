@@ -34,8 +34,17 @@ fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>)
 
     match (request.method(), request.uri().path()) {
         (&Method::GET, "/api/v1/list_games") => {
-            *response.body_mut() =
-                Body::from(serde_json::to_string(&*games_arc.lock().unwrap()).unwrap());
+            let games_arc = match (&games_arc).lock() {
+                Ok(v) => v,
+                Err(e) => panic!("Mutex was poisoned: {}", e),
+            };
+            *response.body_mut() = Body::from(match serde_json::to_string(&*games_arc) {
+                Ok(v) => v,
+                Err(e) => {
+                    println!("An error occurred serializing the JSON to a string.");
+                    e.to_string()
+                }
+            });
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
@@ -93,15 +102,15 @@ mod test {
 
         // test cases separately to get around the nondeterministic order for hashmap
         let test_json_touhou = "{\"name\":\"Touhou\",\
-                                    \"description\":\"bullet hell with waifus\",\
-                                    \"genres\":[\"bullet hell\",\"anime\"],\
-                                    \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
-                                    \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
+                                \"description\":\"bullet hell with waifus\",\
+                                \"genres\":[\"bullet hell\",\"anime\"],\
+                                \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
+                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
         let test_json_mb = "{\"name\":\"Melty Blood\",\
-                                \"description\":\"fighter with waifus\",\
-                                \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                                \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
-                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
+                            \"description\":\"fighter with waifus\",\
+                            \"genres\":[\"fighter\",\"anime\",\"2d\"],\
+                            \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                            \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
         assert_eq!(json_object_touhou, test_json_touhou);
         assert_eq!(json_object_melty_blood, test_json_mb);
