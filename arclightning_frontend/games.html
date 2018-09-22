@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+         <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
+	
         <meta name="viewport" content="width=device-width, initial-scale=1">  
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -12,16 +14,22 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
         <!-- production version, optimized for size and speed -->
         <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<style>
+ 	h1{
+         	font-family: 'Do Hyeon', sans-serif;
+         	font-size:64px;
+      }
+	</style>
     </head>
     <body>
         <div class="container-fluid">
 	   <div>
-		<h1>arc lightning</h1>
+		<h1>Arc Lightning</h1>
 	   </div>
             <div class="row" id="games">
                 <div class="col-sm-2" style="border: 1px solid black; height:42vh; padding: 10px; margin-bottom:15px; margin-left: 20px; margin-right:20px;" v-for="item in items">
 		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
-                <div style="text-align: center; border-top: 1px solid black; font-size: 24px;"> {{ item.name }} </div>	
+                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }} </div>	
 		</div>
             </div>
         </div>
