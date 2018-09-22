@@ -15,10 +15,13 @@
     </head>
     <body>
         <div class="container-fluid">
+	   <div>
+		<h1>arc lightning</h1>
+	   </div>
             <div class="row" id="games">
-                <div class="col-sm-4" style="background-color: yellow; height:33vh; background-color:black; padding: 1px;" v-for="item in items">
-		<img style="position:relative;height:100%; width:100%;"src v-bind:src= "item.thumbnail_path"  />
-                	
+                <div class="col-sm-2" style="border: 1px solid black; height:42vh; padding: 10px; margin-bottom:15px; margin-left: 20px; margin-right:20px;" v-for="item in items">
+		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
+                <div style="text-align: center; border-top: 1px solid black; font-size: 24px;"> {{ item.name }} </div>	
 		</div>
             </div>
         </div>
@@ -28,11 +31,19 @@
             el: '#games',
             data: {
                 items: [
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/smashbros.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhou.jpg', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBlood.png', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/smashbros.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-		]
+                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
+                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
+                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
+                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
+                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
+                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
+
+                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
+                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
+                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
+                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
+
+	]
             },
         });
     </script>
