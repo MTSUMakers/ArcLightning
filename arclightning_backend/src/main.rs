@@ -5,6 +5,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
+mod password;
+
 use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
@@ -106,6 +108,16 @@ fn main() {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_check_password() {
+        let password: String = "this_IS my_P455W0RD".to_owned();
+        let hashed_password = String::from_utf8_lossy(
+            password::blake2b(64, &[], "this_IS my_P455W0RD".to_owned().as_bytes()).as_bytes(),
+        ).to_string();
+
+        assert!(password::check_password(password, hashed_password));
+    }
 
     #[test]
     fn test_json_serialization() {
