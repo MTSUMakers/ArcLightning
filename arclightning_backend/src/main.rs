@@ -31,16 +31,42 @@ struct Game {
 
 fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
+    let mut response_tuple: (hyper::Body, hyper::StatusCode) =
+        (Body::empty(), StatusCode::NOT_FOUND);
 
     match (request.method(), request.uri().path()) {
         (&Method::GET, "/api/v1/list_games") => {
-            *response.body_mut() =
-                Body::from(serde_json::to_string(&*games_arc.lock().unwrap()).unwrap());
+            response_tuple = match games_arc
+                .lock()
+                .map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                })
+                .and_then(|games| {
+                    serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
+                })
+                .and_then(|body| Ok(Body::from(body)))
+            {
+                Ok(v) => (v, StatusCode::OK),
+                Err(_e) => (
+                    Body::from("Internal server error".to_owned()),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                ),
+            };
         }
         _ => {
-            *response.status_mut() = StatusCode::NOT_FOUND;
+            response_tuple = (
+                Body::from("Invalid request".to_owned()),
+                StatusCode::NOT_FOUND,
+            );
         }
     }
+
+    *response.body_mut() = response_tuple.0;
+    *response.status_mut() = response_tuple.1;
+
     Box::new(future::ok(response))
 }
 
@@ -50,7 +76,7 @@ fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::
     file.read_to_string(&mut games_toml)?;
 
     // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))
+    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e))
 }
 
 fn main() {
@@ -59,7 +85,7 @@ fn main() {
 
     // Store games locally on server
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
-    let games_data = Arc::new(Mutex::new(games.clone()));
+    let games_data = Arc::new(Mutex::new(games));
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
@@ -93,15 +119,15 @@ mod test {
 
         // test cases separately to get around the nondeterministic order for hashmap
         let test_json_touhou = "{\"name\":\"Touhou\",\
-                                    \"description\":\"bullet hell with waifus\",\
-                                    \"genres\":[\"bullet hell\",\"anime\"],\
-                                    \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
-                                    \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
+                                \"description\":\"bullet hell with waifus\",\
+                                \"genres\":[\"bullet hell\",\"anime\"],\
+                                \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
+                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
         let test_json_mb = "{\"name\":\"Melty Blood\",\
-                                \"description\":\"fighter with waifus\",\
-                                \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                                \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
-                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
+                            \"description\":\"fighter with waifus\",\
+                            \"genres\":[\"fighter\",\"anime\",\"2d\"],\
+                            \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                            \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
 
         assert_eq!(json_object_touhou, test_json_touhou);
         assert_eq!(json_object_melty_blood, test_json_mb);
