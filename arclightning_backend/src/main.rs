@@ -31,39 +31,37 @@ struct Game {
 
 fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
-    let mut response_tuple: (hyper::Body, hyper::StatusCode) =
-        (Body::empty(), StatusCode::NOT_FOUND);
 
-    match (request.method(), request.uri().path()) {
-        (&Method::GET, "/api/v1/list_games") => {
-            response_tuple = match games_arc
-                .lock()
-                .map_err(|_e| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        "Failed to acquire mutex lock on games list".to_owned(),
-                    )
-                })
-                .and_then(|games| {
-                    serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
-                })
-                .and_then(|body| Ok(Body::from(body)))
-            {
-                Ok(v) => (v, StatusCode::OK),
-                Err(_e) => (
-                    Body::from("Internal server error".to_owned()),
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                ),
-            };
-        }
-        _ => {
-            response_tuple = (
+    let response_tuple: (hyper::Body, hyper::StatusCode) =
+        match (request.method(), request.uri().path()) {
+            (&Method::GET, "/api/v1/list_games") => {
+                //response_tuple = match games_arc
+                match games_arc
+                    .lock()
+                    .map_err(|_e| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            "Failed to acquire mutex lock on games list".to_owned(),
+                        )
+                    })
+                    .and_then(|games| {
+                        serde_json::to_string(&*games)
+                            .map_err(|e| io::Error::new(ErrorKind::Other, e))
+                    })
+                    .and_then(|body| Ok(Body::from(body)))
+                {
+                    Ok(v) => (v, StatusCode::OK),
+                    Err(_e) => (
+                        Body::from("Internal server error".to_owned()),
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                    ),
+                }
+            }
+            _ => (
                 Body::from("Invalid request".to_owned()),
                 StatusCode::NOT_FOUND,
-            );
-        }
-    }
-
+            ),
+        };
     *response.body_mut() = response_tuple.0;
     *response.status_mut() = response_tuple.1;
 
