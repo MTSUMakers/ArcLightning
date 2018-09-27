@@ -18,7 +18,19 @@
  	h1{
          	font-family: 'Do Hyeon', sans-serif;
          	font-size:64px;
-      }
+       }
+	
+	.selectedClass {
+		background-color: blue;
+	}
+	.unselectedClass {
+		border: 1px solid black;
+		height: 42vh;
+		padding: 10px;
+		margin-bottom: 15px;
+		margin-left: 20px;
+		margin-right: 20px;
+	}
 	</style>
     </head>
     <body>
@@ -27,9 +39,10 @@
 		<h1>Arc Lightning</h1>
 	   </div>
             <div class="row" id="games">
-                <div class="col-sm-2" style="border: 1px solid black; height:42vh; padding: 10px; margin-bottom:15px; margin-left: 20px; margin-right:20px;" v-for="item in items">
+                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" >
+	
 		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
-                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }} </div>	
+                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }}</div>	
 		</div>
             </div>
         </div>
@@ -37,7 +50,12 @@
     <script type="text/javascript">
         var app = new Vue({
             el: '#games',
+	    created(){
+		this.onKeyDown = this.onKeyDown.bind(this);
+		document.addEventListener('keydown', this.onKeyDown);
+	    },
             data: {
+		selectedIndex: 0,
                 items: [
                     {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
                     {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
@@ -53,6 +71,44 @@
 
 	]
             },
+
+
+	methods: {
+		sendSelectedGame: function() {
+			alert("hello");
+			/*$.ajax({ 
+				type: 'POST',
+				url: 'http://localhost:8080',
+				data: {id: this.items[this.selectedIndex]},
+			}) */
+		},
+
+		onKeyDown(e){
+			switch(e.keyCode){
+				//case 38 is down arrow, case 40 is up arrow.
+				//38 and 40 will have to be changed to be able to be more dynamic because right nwo its simply based off of 5 columns, 2 rows
+				case 37:
+					if(this.selectedIndex != 0){
+						this.selectedIndex--;
+					}break;
+				case 38:
+					if(this.selectedIndex >= 5){ 
+						this.selectedIndex -= 5;
+					}break;
+				case 39:
+					if(this.selectedIndex != this.items.length-1){
+						this.selectedIndex++;
+					}break;
+				case 40:
+					if(this.selectedIndex < 5){ 
+						this.selectedIndex += 5;
+					}break;
+				case 13:
+					this.sendSelectedGame();
+					break;	 
+			}
+		}
+	},
         });
     </script>
 </html>
