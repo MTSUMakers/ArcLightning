@@ -27,6 +27,7 @@ struct Game {
     genres: Vec<String>,
     thumbnail_path: PathBuf,
     exe_path: PathBuf,
+    exe_args: Vec<String>,
 }
 
 fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
