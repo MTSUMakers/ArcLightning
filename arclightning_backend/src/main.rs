@@ -5,6 +5,8 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate toml;
+extern crate rand;
+
 
 use futures::future;
 use hyper::rt::{Future, Stream};
@@ -106,4 +108,10 @@ mod test {
 
         assert_eq!(games, test_games);
     }
+
+ 
+}
+#[cfg(splash)]
+mod splash {
+
 }
