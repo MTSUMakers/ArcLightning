@@ -1,13 +1,13 @@
 [touhou_123]
 name = "Touhou"
 description = "bullet hell with waifus"
-genre = ["bullet hell", "anime"]
+genres = ["bullet hell", "anime"]
 thumbnail_path = "path/to/touhou/thumbnail"
 exe_path = "C:\\Users\\THISUSER\\TOUHOU_PATH"
 
 [melty_blood]
 name = "Melty Blood"
 description = "fighter with waifus"
-genre = ["fighter", "anime", "2d"]
+genres = ["fighter", "anime", "2d"]
 thumbnail_path = "path/to/melty_blood/thumbnail"
 exe_path = "C:\\Users\\THISUSER\\MELTY_BLOOD_PATH"

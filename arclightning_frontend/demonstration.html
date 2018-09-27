@@ -8,7 +8,10 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u">
   <!-- Vuejs -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<<<<<<< HEAD
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+=======
+>>>>>>> upstream/master
 
   <style>
     .flash {
@@ -54,6 +57,7 @@
       transform: translateX(-50%) translateY(-50%);
       background-size: cover;
     }
+<<<<<<< HEAD
 
     * {
         box-sizing: border-box;
@@ -99,10 +103,14 @@
     }
 
 </style>
+=======
+  </style>
+>>>>>>> upstream/master
 
 </head>
 
 <body>
+<<<<<<< HEAD
 
   <!-- template for the modal component -->
   <script type="x/template" id="pwModal">
@@ -125,6 +133,8 @@
     <modal :show="showModal" @close="showModal = false"></modal>
   </div>
 
+=======
+>>>>>>> upstream/master
   <video id="bgvid" ref="demovid" playsinline autoplay muted @ended="demoRun()">
     <source v-bind:src="videos[0]" type="video/webm">
   </video>
@@ -148,6 +158,7 @@
         }
       }
     })
+<<<<<<< HEAD
 
     // password prompt modal component
     var unlock = Vue.component('modal', {
@@ -190,6 +201,8 @@
         showModal: false
       }
     })
+=======
+>>>>>>> upstream/master
   </script>
   <div>
     <h1 class="flash centerItem">Demo Mode</h1>
