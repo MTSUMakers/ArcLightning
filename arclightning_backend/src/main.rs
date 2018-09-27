@@ -26,7 +26,9 @@ struct Game {
     description: String,
     genres: Vec<String>,
     thumbnail_path: PathBuf,
+    #[serde(skip_serializing)]
     exe_path: PathBuf,
+    #[serde(skip_serializing)]
     exe_args: Vec<String>,
 }
 
@@ -120,13 +122,11 @@ mod test {
         let test_json_touhou = "{\"name\":\"Touhou\",\
                                 \"description\":\"bullet hell with waifus\",\
                                 \"genres\":[\"bullet hell\",\"anime\"],\
-                                \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
-                                \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\TOUHOU_PATH\"}";
+                                \"thumbnail_path\":\"path/to/touhou/thumbnail\"}";
         let test_json_mb = "{\"name\":\"Melty Blood\",\
                             \"description\":\"fighter with waifus\",\
                             \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                            \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
-                            \"exe_path\":\"C:\\\\Users\\\\THISUSER\\\\MELTY_BLOOD_PATH\"}";
+                            \"thumbnail_path\":\"path/to/melty_blood/thumbnail\"}";
 
         assert_eq!(json_object_touhou, test_json_touhou);
         assert_eq!(json_object_melty_blood, test_json_mb);
@@ -161,7 +161,8 @@ mod test {
                 description: "bullet hell with waifus".to_owned(),
                 genres: vec!["bullet hell".to_owned(), "anime".to_owned()],
                 thumbnail_path: PathBuf::from(r"path\to\touhou\thumbnail"),
-                exe_path: PathBuf::from(r"C:\Users\THISUSER\TOUHOU_PATH"),
+                exe_path: PathBuf::from(r"test_files\touhou_game.exe"),
+                exe_args: vec!["arg1".to_owned(), "arg2".to_owned()],
             },
         );
 
@@ -172,7 +173,8 @@ mod test {
                 description: "fighter with waifus".to_owned(),
                 genres: vec!["fighter".to_owned(), "anime".to_owned(), "2d".to_owned()],
                 thumbnail_path: PathBuf::from(r"path\to\melty_blood\thumbnail"),
-                exe_path: PathBuf::from(r"C:\Users\THISUSER\MELTY_BLOOD_PATH"),
+                exe_path: PathBuf::from(r"test_files\melty_blood_game.exe"),
+                exe_args: vec!["arg1".to_owned(), "arg2".to_owned()],
             },
         );
         assert_eq!(games, test_games);
