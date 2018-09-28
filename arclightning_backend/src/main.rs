@@ -57,7 +57,8 @@ impl RouterArguments {
 fn router(args: &RouterArguments, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
 
-    let games_arc = (*args).games_arc.unwrap();
+    // TODO: figure out if cloning and unwrapping is actually necessary
+    let games_arc = (*args).clone().games_arc.unwrap();
 
     let response_tuple: (hyper::Body, hyper::StatusCode) =
         match (request.method(), request.uri().path()) {
