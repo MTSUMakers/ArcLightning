@@ -59,31 +59,36 @@ fn router(args: &RouterArguments, request: Request<Body>) -> ResponseFuture {
 
     // TODO: figure out if cloning and unwrapping is actually necessary
     let games_arc = (*args).clone().games_arc.unwrap();
+    let id = (*args).clone().start_game_id;
 
     let response_tuple: (hyper::Body, hyper::StatusCode) =
         match (request.method(), request.uri().path()) {
-            (&Method::GET, "/api/v1/list_games") => {
+            (&Method::GET, "/api/v1/list_games") => match games_arc
+                .lock()
+                .map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                })
+                .and_then(|games| {
+                    serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
+                })
+                .and_then(|body| Ok(Body::from(body)))
+            {
+                Ok(v) => (v, StatusCode::OK),
+                Err(_e) => (
+                    Body::from("Internal server error".to_owned()),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                ),
+            },
 
-                match games_arc
-                    .lock()
-                    .map_err(|_e| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            "Failed to acquire mutex lock on games list".to_owned(),
-                        )
-                    })
-                    .and_then(|games| {
-                        serde_json::to_string(&*games)
-                            .map_err(|e| io::Error::new(ErrorKind::Other, e))
-                    })
-                    .and_then(|body| Ok(Body::from(body)))
-                {
-                    Ok(v) => (v, StatusCode::OK),
-                    Err(_e) => (
-                        Body::from("Internal server error".to_owned()),
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                    ),
-                }
+            (&Method::GET, "/api/v1/start_game") => {
+                match id {
+                    Some(v) => println!("Starting game: {:?}", v),
+                    None => println!("This shouldn't happen"),
+                };
+                (Body::from("Starting game!".to_owned()), StatusCode::OK)
             }
 
             _ => (
