@@ -75,12 +75,15 @@
 
 	methods: {
 		sendSelectedGame: function() {
-			alert("hello");
-			/*$.ajax({ 
-				type: 'POST',
-				url: 'http://localhost:8080',
-				data: {id: this.items[this.selectedIndex]},
-			}) */
+			//check to see if game exists
+			var gameSelected = this.items[this.selectedIndex].exe_path
+			if (gameSelected)
+				$.ajax({ 
+					type: 'POST',
+					url: 'http://localhost:8080',
+					//sends path to executable for selected game
+					data: {id: gameSelected},
+				})
 		},
 
 		onKeyDown(e){
