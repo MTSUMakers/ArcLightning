@@ -32,27 +32,37 @@ struct Game {
     exe_args: Vec<String>,
 }
 
-struct RouterArguments<'a> {
-    games_arc: Option<&'a Arc<Mutex<HashMap<String, Game>>>>,
+#[derive(Debug, Clone)]
+struct RouterArguments {
+    games_arc: Option<Arc<Mutex<HashMap<String, Game>>>>,
     start_game_id: Option<String>,
 }
 
-impl<'a> RouterArguments<'a> {
-    fn new() -> RouterArguments<'a> {
+impl RouterArguments {
+    fn new(games: Arc<Mutex<HashMap<String, Game>>>) -> RouterArguments {
         RouterArguments {
-            games_arc: None,
+            games_arc: Some(games),
             start_game_id: None,
+        }
+    }
+
+    fn start_game_id(self, id: String) -> Self {
+        RouterArguments {
+            start_game_id: Some(id),
+            ..self
         }
     }
 }
 
-fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
+fn router(args: &RouterArguments, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
+
+    let games_arc = (*args).games_arc.unwrap();
 
     let response_tuple: (hyper::Body, hyper::StatusCode) =
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => {
-                //response_tuple = match games_arc
+
                 match games_arc
                     .lock()
                     .map_err(|_e| {
@@ -106,9 +116,11 @@ fn main() {
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
+    let router_args = RouterArguments::new(games_data);
+
     let new_service = move || {
-        let games_data = games_data.clone();
-        service_fn(move |request| router(&games_data, request))
+        let router_args = router_args.clone();
+        service_fn(move |request| router(&router_args, request))
     };
 
     let server = Server::bind(&addr)
