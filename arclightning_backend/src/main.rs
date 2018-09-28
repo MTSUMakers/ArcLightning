@@ -32,6 +32,20 @@ struct Game {
     exe_args: Vec<String>,
 }
 
+struct RouterArguments<'a> {
+    games_arc: Option<&'a Arc<Mutex<HashMap<String, Game>>>>,
+    start_game_id: Option<String>,
+}
+
+impl<'a> RouterArguments<'a> {
+    fn new() -> RouterArguments<'a> {
+        RouterArguments {
+            games_arc: None,
+            start_game_id: None,
+        }
+    }
+}
+
 fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>) -> ResponseFuture {
     let mut response = Response::new(Body::empty());
 
@@ -60,6 +74,7 @@ fn router(games_arc: &Arc<Mutex<HashMap<String, Game>>>, request: Request<Body>)
                     ),
                 }
             }
+
             _ => (
                 Body::from("Invalid request".to_owned()),
                 StatusCode::NOT_FOUND,
