@@ -83,7 +83,7 @@ fn router(args: &RouterArguments, request: Request<Body>) -> ResponseFuture {
                 ),
             },
 
-            (&Method::GET, "/api/v1/start_game") => {
+            (&Method::POST, "/api/v1/start_game") => {
                 match id {
                     Some(v) => println!("Starting game: {:?}", v),
                     None => println!("This shouldn't happen"),
@@ -122,7 +122,8 @@ fn main() {
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
-    let router_args = RouterArguments::new(games_data);
+    // TODO: How do we set the game ID for what we want to start??
+    let router_args = RouterArguments::new(games_data).start_game_id("touhou_123".to_owned());
 
     let new_service = move || {
         let router_args = router_args.clone();

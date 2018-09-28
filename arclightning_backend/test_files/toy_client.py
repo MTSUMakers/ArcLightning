@@ -20,3 +20,12 @@ for k, v in games.items():
     print(k, '\t', v)
 
 print("Exited with status code:", r.status_code)
+
+# Testing launch game 
+url = "http://127.0.0.1:3000"
+path = "/api/v1/start_game"
+data = "touhou_123"
+
+r = requests.post(url+path, data=data)
+
+print("Exited with status code:", r.status_code)
