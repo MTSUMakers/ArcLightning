@@ -7,8 +7,8 @@ extern crate toml;
 
 use futures::future;
 use hyper::rt::Future;
-use hyper::service::service_fn;
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::service::{self, service_fn};
+use hyper::{Body, Error, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, ErrorKind, Read};
@@ -33,73 +33,85 @@ struct Game {
 }
 
 #[derive(Debug, Clone)]
-struct RouterArguments {
-    games_arc: Option<Arc<Mutex<HashMap<String, Game>>>>,
-    start_game_id: Option<String>,
+struct Router {
+    games_list: Arc<Mutex<HashMap<String, Game>>>,
+    start_game_id: Arc<Mutex<String>>,
 }
 
-impl RouterArguments {
-    fn new(games: Arc<Mutex<HashMap<String, Game>>>) -> RouterArguments {
-        RouterArguments {
-            games_arc: Some(games),
-            start_game_id: None,
-        }
-    }
-
-    fn start_game_id(self, id: String) -> Self {
-        RouterArguments {
-            start_game_id: Some(id),
-            ..self
-        }
+impl hyper::service::Service for Router {
+    type ReqBody = Body;
+    type ResBody = Body;
+    type Error = Error;
+    type Future = ResponseFuture;
+    fn call(&mut self, req: Request<Self::ReqBody>) -> Self::Future {
+        self.route(req)
     }
 }
 
-fn router(args: &RouterArguments, request: Request<Body>) -> ResponseFuture {
-    let mut response = Response::new(Body::empty());
+impl hyper::service::NewService for Router {
+    type ReqBody = Body;
+    type ResBody = Body;
+    type Error = Error;
+    type Service = Router;
+    type Future = Box<Future<Item = Self::Service, Error = Self::InitError> + Send>;
+    type InitError= Error;
+    fn new_service(&self) -> Self::Future {
+        Box::new(future::ok(Self {
+            // TODO: is cloning necessary here?
+            games_list: self.games_list.clone(),
+            start_game_id: self.start_game_id.clone(),
+        }))
+    }
+}
 
-    // TODO: figure out if cloning and unwrapping is actually necessary
-    let games_arc = (*args).clone().games_arc.unwrap();
-    let id = (*args).clone().start_game_id;
+impl Router {
+    fn new(games_list: Arc<Mutex<HashMap<String, Game>>>) -> Router {
+        Router {
+            games_list: games_list,
+            start_game_id: Arc::new(Mutex::new("".to_owned())),
+        }
+    }
 
-    let response_tuple: (hyper::Body, hyper::StatusCode) =
-        match (request.method(), request.uri().path()) {
-            (&Method::GET, "/api/v1/list_games") => match games_arc
-                .lock()
-                .map_err(|_e| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        "Failed to acquire mutex lock on games list".to_owned(),
-                    )
-                })
-                .and_then(|games| {
-                    serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
-                })
-                .and_then(|body| Ok(Body::from(body)))
-            {
-                Ok(v) => (v, StatusCode::OK),
-                Err(_e) => (
-                    Body::from("Internal server error".to_owned()),
-                    StatusCode::INTERNAL_SERVER_ERROR,
+    fn route(&self, request: Request<Body>) -> ResponseFuture {
+        let mut response = Response::new(Body::empty());
+
+        let response_tuple: (hyper::Body, hyper::StatusCode) =
+            match (request.method(), request.uri().path()) {
+                (&Method::GET, "/api/v1/list_games") => match self.games_list
+                    .lock()
+                    .map_err(|_e| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            "Failed to acquire mutex lock on games list".to_owned(),
+                        )
+                    })
+                    .and_then(|games| {
+                        serde_json::to_string(&*games)
+                            .map_err(|e| io::Error::new(ErrorKind::Other, e))
+                    })
+                    .and_then(|body| Ok(Body::from(body)))
+                {
+                    Ok(v) => (v, StatusCode::OK),
+                    Err(_e) => (
+                        Body::from("Internal server error".to_owned()),
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                    ),
+                },
+
+                (&Method::POST, "/api/v1/start_game") => {
+                    (Body::from("Starting game!".to_owned()), StatusCode::OK)
+                }
+
+                _ => (
+                    Body::from("Invalid request".to_owned()),
+                    StatusCode::NOT_FOUND,
                 ),
-            },
+            };
+        *response.body_mut() = response_tuple.0;
+        *response.status_mut() = response_tuple.1;
 
-            (&Method::POST, "/api/v1/start_game") => {
-                match id {
-                    Some(v) => println!("Starting game: {:?}", v),
-                    None => println!("This shouldn't happen"),
-                };
-                (Body::from("Starting game!".to_owned()), StatusCode::OK)
-            }
-
-            _ => (
-                Body::from("Invalid request".to_owned()),
-                StatusCode::NOT_FOUND,
-            ),
-        };
-    *response.body_mut() = response_tuple.0;
-    *response.status_mut() = response_tuple.1;
-
-    Box::new(future::ok(response))
+        Box::new(future::ok(response))
+    }
 }
 
 fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::Error> {
@@ -117,21 +129,15 @@ fn main() {
 
     // Store games locally on server
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
-    let games_data = Arc::new(Mutex::new(games));
+
+    // put the games data into the router struct
+    let router = Router::new(Arc::new(Mutex::new(games)));
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
-    // TODO: How do we set the game ID for what we want to start??
-    let router_args = RouterArguments::new(games_data).start_game_id("touhou_123".to_owned());
-
-    let new_service = move || {
-        let router_args = router_args.clone();
-        service_fn(move |request| router(&router_args, request))
-    };
-
     let server = Server::bind(&addr)
-        .serve(new_service)
+        .serve(router)
         .map_err(|err| eprintln!("server error: {}", err));
 
     println!("Listening on http://{}", addr);
