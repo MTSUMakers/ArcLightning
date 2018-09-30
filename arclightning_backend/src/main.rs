@@ -7,12 +7,12 @@ extern crate toml;
 
 use futures::future;
 use hyper::rt::Future;
-use hyper::service::{self, service_fn};
 use hyper::{Body, Error, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, ErrorKind, Read};
 use std::path::PathBuf;
+use std::process::Command;
 use std::sync::{Arc, Mutex};
 
 // after this concept is further understood, will switch to 'Either'
@@ -54,7 +54,7 @@ impl hyper::service::NewService for Router {
     type Error = Error;
     type Service = Router;
     type Future = Box<Future<Item = Self::Service, Error = Self::InitError> + Send>;
-    type InitError= Error;
+    type InitError = Error;
     fn new_service(&self) -> Self::Future {
         Box::new(future::ok(Self {
             // TODO: is cloning necessary here?
@@ -71,13 +71,20 @@ impl Router {
             start_game_id: Arc::new(Mutex::new("".to_owned())),
         }
     }
+    fn new_with_id(games_list: Arc<Mutex<HashMap<String, Game>>>, start_game_id: String) -> Router {
+        Router {
+            games_list: games_list,
+            start_game_id: Arc::new(Mutex::new(start_game_id)),
+        }
+    }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         let mut response = Response::new(Body::empty());
 
         let response_tuple: (hyper::Body, hyper::StatusCode) =
             match (request.method(), request.uri().path()) {
-                (&Method::GET, "/api/v1/list_games") => match self.games_list
+                (&Method::GET, "/api/v1/list_games") => match self
+                    .games_list
                     .lock()
                     .map_err(|_e| {
                         io::Error::new(
@@ -99,6 +106,26 @@ impl Router {
                 },
 
                 (&Method::POST, "/api/v1/start_game") => {
+                    let exe_path: String = (*(self.games_list.lock().unwrap()))
+                        .get(&*(self.start_game_id.lock().unwrap()))
+                        .unwrap()
+                        .exe_path
+                        .clone()
+                        .into_os_string()
+                        .into_string()
+                        .unwrap();
+                    let exe_args: String = (*(self.games_list.lock().unwrap()))
+                        .get(&*(self.start_game_id.lock().unwrap()))
+                        .unwrap()
+                        .exe_args
+                        .join("")
+                        .to_owned();
+
+                    Command::new(exe_path)
+                        .arg(exe_args)
+                        .spawn()
+                        .expect("Game failed to launch");
+
                     (Body::from("Starting game!".to_owned()), StatusCode::OK)
                 }
 
@@ -131,7 +158,7 @@ fn main() {
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
     // put the games data into the router struct
-    let router = Router::new(Arc::new(Mutex::new(games)));
+    let router = Router::new_with_id(Arc::new(Mutex::new(games)), "touhou_123".to_owned());
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();

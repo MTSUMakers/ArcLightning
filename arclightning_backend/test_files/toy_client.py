@@ -2,6 +2,7 @@ import requests
 import json
 
 # Testing an invalid path
+print("Testing invalid endpoint")
 url = "http://127.0.0.1:3000"
 path = "/a/different/path"
 
@@ -10,6 +11,7 @@ print("Exited with status code:", r.status_code)
 
 
 # Testing list games 
+print("Testing list games endpoint")
 url = "http://127.0.0.1:3000"
 path = "/api/v1/list_games"
 
@@ -22,6 +24,7 @@ for k, v in games.items():
 print("Exited with status code:", r.status_code)
 
 # Testing launch game 
+print("Testing start game endpoint with data: touhou_123")
 url = "http://127.0.0.1:3000"
 path = "/api/v1/start_game"
 data = "touhou_123"
