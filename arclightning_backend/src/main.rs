@@ -16,7 +16,7 @@ use std::process::Command;
 use std::sync::{Arc, Mutex};
 
 // after this concept is further understood, will switch to 'Either'
-type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
+type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
 // using PartialEq for unit tests
 // Using clone in a unit test atm.  Might not be necessary
@@ -35,13 +35,12 @@ struct Game {
 #[derive(Debug, Clone)]
 struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
-    start_game_id: Arc<Mutex<String>>,
 }
 
 impl hyper::service::Service for Router {
     type ReqBody = Body;
     type ResBody = Body;
-    type Error = Error;
+    type Error = io::Error;
     type Future = ResponseFuture;
     fn call(&mut self, req: Request<Self::ReqBody>) -> Self::Future {
         self.route(req)
@@ -51,7 +50,7 @@ impl hyper::service::Service for Router {
 impl hyper::service::NewService for Router {
     type ReqBody = Body;
     type ResBody = Body;
-    type Error = Error;
+    type Error = io::Error;
     type Service = Router;
     type Future = Box<Future<Item = Self::Service, Error = Self::InitError> + Send>;
     type InitError = Error;
@@ -59,7 +58,6 @@ impl hyper::service::NewService for Router {
         Box::new(future::ok(Self {
             // TODO: is cloning necessary here?
             games_list: self.games_list.clone(),
-            start_game_id: self.start_game_id.clone(),
         }))
     }
 }
@@ -68,18 +66,19 @@ impl Router {
     fn new(games_list: Arc<Mutex<HashMap<String, Game>>>) -> Self {
         Router {
             games_list: games_list,
-            start_game_id: Arc::new(Mutex::new("".to_owned())),
-        }
-    }
-    fn new_with_id(games_list: Arc<Mutex<HashMap<String, Game>>>, start_game_id: String) -> Self {
-        Router {
-            games_list: games_list,
-            start_game_id: Arc::new(Mutex::new(start_game_id)),
         }
     }
 
-    fn list_games(&self) -> (hyper::Body, hyper::StatusCode) {
-        match self
+    fn invalid_endpoint(&self) -> ResponseFuture {
+        let mut response = Response::new(Body::empty());
+        *response.body_mut() = Body::from("Invalid request".to_owned());
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        Box::new(future::ok(response))
+    }
+
+    fn list_games(&self) -> ResponseFuture {
+        let mut response = Response::new(Body::empty());
+        let response_tuple = match self
             .games_list
             .lock()
             .map_err(|_e| {
@@ -98,49 +97,62 @@ impl Router {
                 Body::from("Internal server error".to_owned()),
                 StatusCode::INTERNAL_SERVER_ERROR,
             ),
-        }
-    }
-
-    fn start_game(&self) -> (hyper::Body, hyper::StatusCode) {
-        let exe_path: String = (*(self.games_list.lock().unwrap()))
-            .get(&*(self.start_game_id.lock().unwrap()))
-            .unwrap()
-            .exe_path
-            .clone()
-            .into_os_string()
-            .into_string()
-            .unwrap();
-        let exe_args: String = (*(self.games_list.lock().unwrap()))
-            .get(&*(self.start_game_id.lock().unwrap()))
-            .unwrap()
-            .exe_args
-            .join("")
-            .to_owned();
-
-        Command::new(exe_path)
-            .arg(exe_args)
-            .spawn()
-            .expect("Game failed to launch");
-
-        (Body::from("Starting game!".to_owned()), StatusCode::OK)
-    }
-
-    fn route(&self, request: Request<Body>) -> ResponseFuture {
-        let mut response = Response::new(Body::empty());
-
-        let response_tuple: (hyper::Body, hyper::StatusCode) =
-            match (request.method(), request.uri().path()) {
-                (&Method::GET, "/api/v1/list_games") => self.list_games(),
-                (&Method::POST, "/api/v1/start_game") => self.start_game(),
-                _ => (
-                    Body::from("Invalid request".to_owned()),
-                    StatusCode::NOT_FOUND,
-                ),
-            };
+        };
         *response.body_mut() = response_tuple.0;
         *response.status_mut() = response_tuple.1;
 
         Box::new(future::ok(response))
+    }
+
+    fn start_game(&self, req_body: Body) -> ResponseFuture {
+        let games_list = self.games_list.clone();
+
+        let response = req_body
+            .concat2()
+            .map_err(|_e| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    "Failed to acquire mutex lock on games list".to_owned(),
+                )
+            })
+            .map(|body| String::from_utf8(body.to_vec()).unwrap())
+            .and_then(move |game_id| {
+                let mut response = Response::new(Body::empty());
+
+                let exe_path: String = (*(games_list.lock().unwrap()))
+                    .get(&game_id)
+                    .unwrap()
+                    .exe_path
+                    .clone()
+                    .into_os_string()
+                    .into_string()
+                    .unwrap();
+                let exe_args: String = (*(games_list.lock().unwrap()))
+                    .get(&game_id)
+                    .unwrap()
+                    .exe_args
+                    .join("")
+                    .to_owned();
+
+                Command::new(exe_path)
+                    .arg(exe_args)
+                    .spawn()
+                    .expect("Game failed to launch");
+
+                *response.body_mut() = Body::from("Starting game!".to_owned());
+                *response.status_mut() = StatusCode::OK;
+
+                future::ok(response)
+            });
+        Box::new(response)
+    }
+
+    fn route(&self, request: Request<Body>) -> ResponseFuture {
+        match (request.method(), request.uri().path()) {
+            (&Method::GET, "/api/v1/list_games") => self.list_games(),
+            (&Method::POST, "/api/v1/start_game") => self.start_game(request.into_body()),
+            _ => self.invalid_endpoint(),
+        }
     }
 }
 
@@ -161,7 +173,7 @@ fn main() {
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
     // put the games data into the router struct
-    let router = Router::new_with_id(Arc::new(Mutex::new(games)), "touhou_123".to_owned());
+    let router = Router::new(Arc::new(Mutex::new(games)));
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
