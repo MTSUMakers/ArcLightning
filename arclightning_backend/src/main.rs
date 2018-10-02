@@ -117,34 +117,49 @@ impl Router {
             })
             .map(|body| String::from_utf8(body.to_vec()).unwrap())
             .and_then(move |game_id| {
-                let mut response = Response::new(Body::empty());
+                let games_list = games_list.lock().map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                });
 
-                let exe_path: String = (*(games_list.lock().unwrap()))
-                    .get(&game_id)
-                    .unwrap()
-                    .exe_path
-                    .clone()
-                    .into_os_string()
-                    .into_string()
-                    .unwrap();
-                let exe_args: String = (*(games_list.lock().unwrap()))
-                    .get(&game_id)
-                    .unwrap()
-                    .exe_args
-                    .join("")
-                    .to_owned();
+                let response_future = games_list.map(|games_list| {
+                    let mut response = Response::new(Body::empty());
 
-                Command::new(exe_path)
-                    .arg(exe_args)
-                    .spawn()
-                    .expect("Game failed to launch");
+                    let exe_path: PathBuf = games_list
+                        .get(&game_id)
+                        .ok_or_else(|| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                "Failed to acquire mutex lock on games list".to_owned(),
+                            )
+                        })?
+                        .exe_path
+                        .clone();
 
-                *response.body_mut() = Body::from("Starting game!".to_owned());
-                *response.status_mut() = StatusCode::OK;
+                    let exe_args: Vec<String> = games_list
+                        .get(&game_id)
+                        .ok_or_else(|| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                "Failed to acquire mutex lock on games list".to_owned(),
+                            )
+                        })?
+                        .exe_args
+                        .clone();
 
-                future::ok(response)
+                    Command::new(exe_path)
+                        .args(exe_args)
+                        .spawn()?;
+
+                    *response.body_mut() = Body::from("Starting game!".to_owned());
+                    *response.status_mut() = StatusCode::OK;
+                    Ok(response)
+                });
+                response_future
             });
-        Box::new(response)
+        Box::new(response.flatten())
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {

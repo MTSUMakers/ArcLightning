@@ -24,11 +24,13 @@ for k, v in games.items():
 print("Exited with status code:", r.status_code)
 
 # Testing launch game 
-print("Testing start game endpoint with data: touhou_123")
 url = "http://127.0.0.1:3000"
 path = "/api/v1/start_game"
-data = "melty_blood"
+data = ["touhou_123", "melty_blood"]
 
-r = requests.post(url+path, data=data)
+for d in data:
+    print("Testing start game endpoint with data", d)
 
-print("Exited with status code:", r.status_code)
+    r = requests.post(url+path, data=d)
+
+    print("Exited with status code:", r.status_code)
