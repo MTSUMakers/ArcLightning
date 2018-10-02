@@ -5,7 +5,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
-use futures::future;
+use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
@@ -65,17 +65,64 @@ impl hyper::service::NewService for Router {
 }
 
 impl Router {
-    fn new(games_list: Arc<Mutex<HashMap<String, Game>>>) -> Router {
+    fn new(games_list: Arc<Mutex<HashMap<String, Game>>>) -> Self {
         Router {
             games_list: games_list,
             start_game_id: Arc::new(Mutex::new("".to_owned())),
         }
     }
-    fn new_with_id(games_list: Arc<Mutex<HashMap<String, Game>>>, start_game_id: String) -> Router {
+    fn new_with_id(games_list: Arc<Mutex<HashMap<String, Game>>>, start_game_id: String) -> Self {
         Router {
             games_list: games_list,
             start_game_id: Arc::new(Mutex::new(start_game_id)),
         }
+    }
+
+    fn list_games(&self) -> (hyper::Body, hyper::StatusCode) {
+        match self
+            .games_list
+            .lock()
+            .map_err(|_e| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    "Failed to acquire mutex lock on games list".to_owned(),
+                )
+            })
+            .and_then(|games| {
+                serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
+            })
+            .and_then(|body| Ok(Body::from(body)))
+        {
+            Ok(v) => (v, StatusCode::OK),
+            Err(_e) => (
+                Body::from("Internal server error".to_owned()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+        }
+    }
+
+    fn start_game(&self) -> (hyper::Body, hyper::StatusCode) {
+        let exe_path: String = (*(self.games_list.lock().unwrap()))
+            .get(&*(self.start_game_id.lock().unwrap()))
+            .unwrap()
+            .exe_path
+            .clone()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        let exe_args: String = (*(self.games_list.lock().unwrap()))
+            .get(&*(self.start_game_id.lock().unwrap()))
+            .unwrap()
+            .exe_args
+            .join("")
+            .to_owned();
+
+        Command::new(exe_path)
+            .arg(exe_args)
+            .spawn()
+            .expect("Game failed to launch");
+
+        (Body::from("Starting game!".to_owned()), StatusCode::OK)
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
@@ -83,52 +130,8 @@ impl Router {
 
         let response_tuple: (hyper::Body, hyper::StatusCode) =
             match (request.method(), request.uri().path()) {
-                (&Method::GET, "/api/v1/list_games") => match self
-                    .games_list
-                    .lock()
-                    .map_err(|_e| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            "Failed to acquire mutex lock on games list".to_owned(),
-                        )
-                    })
-                    .and_then(|games| {
-                        serde_json::to_string(&*games)
-                            .map_err(|e| io::Error::new(ErrorKind::Other, e))
-                    })
-                    .and_then(|body| Ok(Body::from(body)))
-                {
-                    Ok(v) => (v, StatusCode::OK),
-                    Err(_e) => (
-                        Body::from("Internal server error".to_owned()),
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                    ),
-                },
-
-                (&Method::POST, "/api/v1/start_game") => {
-                    let exe_path: String = (*(self.games_list.lock().unwrap()))
-                        .get(&*(self.start_game_id.lock().unwrap()))
-                        .unwrap()
-                        .exe_path
-                        .clone()
-                        .into_os_string()
-                        .into_string()
-                        .unwrap();
-                    let exe_args: String = (*(self.games_list.lock().unwrap()))
-                        .get(&*(self.start_game_id.lock().unwrap()))
-                        .unwrap()
-                        .exe_args
-                        .join("")
-                        .to_owned();
-
-                    Command::new(exe_path)
-                        .arg(exe_args)
-                        .spawn()
-                        .expect("Game failed to launch");
-
-                    (Body::from("Starting game!".to_owned()), StatusCode::OK)
-                }
-
+                (&Method::GET, "/api/v1/list_games") => self.list_games(),
+                (&Method::POST, "/api/v1/start_game") => self.start_game(),
                 _ => (
                     Body::from("Invalid request".to_owned()),
                     StatusCode::NOT_FOUND,

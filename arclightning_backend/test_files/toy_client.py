@@ -27,7 +27,7 @@ print("Exited with status code:", r.status_code)
 print("Testing start game endpoint with data: touhou_123")
 url = "http://127.0.0.1:3000"
 path = "/api/v1/start_game"
-data = "touhou_123"
+data = {"start_game_id": "touhou_123"}
 
 r = requests.post(url+path, data=data)
 
