@@ -149,9 +149,7 @@ impl Router {
                         .exe_args
                         .clone();
 
-                    Command::new(exe_path)
-                        .args(exe_args)
-                        .spawn()?;
+                    Command::new(exe_path).args(exe_args).spawn()?;
 
                     *response.body_mut() = Body::from("Starting game!".to_owned());
                     *response.status_mut() = StatusCode::OK;
