@@ -10,7 +10,8 @@
 
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <!-- Latest compiled and minified JavaScript -->
+          <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
         <!-- production version, optimized for size and speed -->
         <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -77,13 +78,29 @@
 		sendSelectedGame: function() {
 			//check to see if game exists
 			var gameSelected = this.items[this.selectedIndex].exe_path
+			if(gameSelected)
+				axios.post('http://localhost:8000', {
+					id:gameSelected
+			})
+			/*debugging stuff*/
+			/*.then(function(response){
+				alert(response);
+			})
+			.catch(function (error) {
+				alert(gameSelected);
+			}) */
+			
+			
+
+		/* ajax functionality in case we dont end up using axios
+	
 			if (gameSelected)
 				$.ajax({ 
 					type: 'POST',
 					url: 'http://localhost:8080',
 					//sends path to executable for selected game
 					data: {id: gameSelected},
-				})
+				}) */
 		},
 
 		onKeyDown(e){
