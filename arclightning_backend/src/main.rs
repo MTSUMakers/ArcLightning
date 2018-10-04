@@ -214,7 +214,7 @@ mod test {
     fn test_json_serialization() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
         // serialize as json
         let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
@@ -238,7 +238,7 @@ mod test {
     fn test_games_serialization() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
         let games_clone = games.clone();
 
@@ -253,7 +253,7 @@ mod test {
     fn test_read_toml() {
         // Read in a specific file
         let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-        let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
+        let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
         let mut test_games: HashMap<String, Game> = HashMap::new();
         test_games.insert(
