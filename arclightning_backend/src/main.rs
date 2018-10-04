@@ -97,7 +97,7 @@ impl Router {
             .and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
             })
-            .and_then(|body| Ok(Body::from(body)))
+            .map(|body| Body::from(body))
         {
             Ok(v) => (v, StatusCode::OK),
             Err(_e) => (
