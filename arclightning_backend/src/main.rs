@@ -147,10 +147,11 @@ impl Router {
                     Response::builder()
                         .status(StatusCode::OK)
                         .body(Body::from("Starting game!".to_owned()))
-                        .map_err(|_e| {
+                        .map_err(|err| {
                             io::Error::new(
                                 ErrorKind::Other,
-                                "Failed to acquire mutex lock on games list".to_owned(),
+                                format!("An error occured when building a response: {}", err)
+                                    .to_owned(),
                             )
                         })
                 })
