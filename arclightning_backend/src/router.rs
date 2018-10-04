@@ -54,7 +54,7 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when constructing 404 error: {}", err).to_owned(),
+                        format!("An error occured when constructing 404 error: {}", err)
                     )
                 }),
         ))
@@ -67,7 +67,7 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list: {}", err).to_owned(),
+                    format!("Failed to acquire mutex on games list: {}", err)
                 )
             }).and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
@@ -97,7 +97,7 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to parse byte string: {}", err).to_owned(),
+                    format!("Failed to parse byte string: {}", err)
                 )
             }).and_then(|body| {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
