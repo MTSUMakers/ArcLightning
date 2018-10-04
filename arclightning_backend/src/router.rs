@@ -64,10 +64,10 @@ impl Router {
         let (body, status) = match self
             .games_list
             .lock()
-            .map_err(|_e| {
+            .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    "Failed to acquire mutex lock on games list".to_owned(),
+                    format!("Failed to acquire mutex on games list: {}", err).to_owned(),
                 )
             }).and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
