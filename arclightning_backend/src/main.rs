@@ -127,27 +127,17 @@ impl Router {
                 let response_future = games_list.map(|games_list| {
                     let mut response = Response::new(Body::empty());
 
-                    let exe_path: PathBuf = games_list
+                    let game = games_list
                         .get(&game_id)
                         .ok_or_else(|| {
                             io::Error::new(
                                 ErrorKind::Other,
                                 "Failed to find game in list of available games".to_owned(),
                             )
-                        })?
-                        .exe_path
-                        .clone();
+                        })?;
 
-                    let exe_args: Vec<String> = games_list
-                        .get(&game_id)
-                        .ok_or_else(|| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                "Failed to find game in list of available games".to_owned(),
-                            )
-                        })?
-                        .exe_args
-                        .clone();
+                    let exe_path = game.exe_path.clone();
+                    let exe_args = game.exe_args.clone();
 
                     Command::new(exe_path).args(exe_args).spawn()?;
 
