@@ -34,7 +34,6 @@ impl hyper::service::NewService for Router {
     type InitError = Error;
     fn new_service(&self) -> Self::Future {
         Box::new(future::ok(Self {
-            // TODO: is cloning necessary here?
             games_list: self.games_list.clone(),
         }))
     }
