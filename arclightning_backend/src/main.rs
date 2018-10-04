@@ -63,9 +63,9 @@ impl hyper::service::NewService for Router {
 }
 
 impl Router {
-    fn new(games_list: Arc<Mutex<HashMap<String, Game>>>) -> Self {
+    fn new(games_list: HashMap<String, Game>) -> Self {
         Router {
-            games_list: games_list,
+            games_list: Arc::new(Mutex::new(games_list)),
         }
     }
 
@@ -182,7 +182,7 @@ fn main() {
     let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
 
     // put the games data into the router struct
-    let router = Router::new(Arc::new(Mutex::new(games)));
+    let router = Router::new(games);
 
     // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
