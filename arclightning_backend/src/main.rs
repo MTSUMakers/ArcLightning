@@ -37,7 +37,7 @@ struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 struct RequestBody {
     id: String,
 }
@@ -97,11 +97,9 @@ impl Router {
                     ErrorKind::Other,
                     "Failed to acquire mutex lock on games list".to_owned(),
                 )
-            })
-            .and_then(|games| {
+            }).and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            })
-            .map(Body::from)
+            }).map(Body::from)
         {
             Ok(v) => (v, StatusCode::OK),
             Err(_e) => (
@@ -110,15 +108,12 @@ impl Router {
             ),
         };
         Box::new(future::result(
-            Response::builder()
-                .status(status)
-                .body(body)
-                .map_err(|_e| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        "Failed to acquire mutex lock on games list".to_owned(),
-                    )
-                }),
+            Response::builder().status(status).body(body).map_err(|_e| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    "Failed to acquire mutex lock on games list".to_owned(),
+                )
+            }),
         ))
     }
 
@@ -132,9 +127,9 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to acquire mutex lock on games list: {}", err).to_owned(),
                 )
-            })
-            .map(|body| String::from_utf8(body.to_vec()).unwrap())
-            .and_then(move |game_id| {
+            }).and_then(|body| {
+                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
+            }).and_then(move |request_body: RequestBody| {
                 let games_list = games_list.lock().map_err(|_e| {
                     io::Error::new(
                         ErrorKind::Other,
@@ -143,7 +138,7 @@ impl Router {
                 });
 
                 games_list.map(|games_list| {
-                    let game = games_list.get(&game_id).ok_or_else(|| {
+                    let game = games_list.get(&request_body.id).ok_or_else(|| {
                         io::Error::new(
                             ErrorKind::Other,
                             "Failed to find game in list of available games".to_owned(),
@@ -166,8 +161,7 @@ impl Router {
                             )
                         })
                 })
-            })
-            .flatten();
+            }).flatten();
         Box::new(response)
     }
 

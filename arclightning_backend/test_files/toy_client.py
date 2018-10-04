@@ -26,11 +26,12 @@ print("Exited with status code:", r.status_code)
 # Testing launch game 
 url = "http://127.0.0.1:3000"
 path = "/api/v1/start_game"
-data = ["touhou_123", "melty_blood"]
+data = [{"id": "touhou_123"}, 
+        {"id": "melty_blood"}]
 
 for d in data:
     print("Testing start game endpoint with data", d)
 
-    r = requests.post(url+path, data=d)
+    r = requests.post(url+path, json=d)
 
     print("Exited with status code:", r.status_code)
