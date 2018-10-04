@@ -1,5 +1,5 @@
-use futures::{future, Stream};
 use super::*;
+use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
 
@@ -51,10 +51,10 @@ impl Router {
             Response::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body(Body::from("uwu 404 not foundu hiss".to_owned()))
-                .map_err(|_e| {
+                .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        "Failed to acquire mutex lock on games list".to_owned(),
+                        format!("An error occured when constructing 404 error: {}", err).to_owned(),
                     )
                 }),
         ))
