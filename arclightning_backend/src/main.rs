@@ -37,6 +37,11 @@ struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
 }
 
+#[derive(Debug, Clone)]
+struct RequestBody {
+    id: String,
+}
+
 impl hyper::service::Service for Router {
     type ReqBody = Body;
     type ResBody = Body;
@@ -96,7 +101,7 @@ impl Router {
             .and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
             })
-            .map(|body| Body::from(body))
+            .map(Body::from)
         {
             Ok(v) => (v, StatusCode::OK),
             Err(_e) => (
@@ -175,7 +180,7 @@ impl Router {
     }
 }
 
-fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::Error> {
+fn toml_to_hashmap(toml_filepath: &PathBuf) -> Result<HashMap<String, Game>, io::Error> {
     let mut games_toml = String::new();
     let mut file = File::open(&toml_filepath)?;
     file.read_to_string(&mut games_toml)?;
@@ -189,7 +194,7 @@ fn main() -> Result<(), io::Error> {
     let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
 
     // Store games locally on server
-    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath)?;
+    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath)?;
 
     // put the games data into the router struct
     let router = Router::new(games);
