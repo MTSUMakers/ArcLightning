@@ -11,7 +11,7 @@ pub struct Router {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-struct RequestBody {
+struct StartGameRequest {
     id: String,
 }
 
@@ -97,11 +97,11 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex lock on games list: {}", err).to_owned(),
+                    format!("Failed to parse byte string: {}", err).to_owned(),
                 )
             }).and_then(|body| {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).and_then(move |request_body: RequestBody| {
+            }).and_then(move |request_body: StartGameRequest| {
                 let games_list = games_list.lock().map_err(|_e| {
                     io::Error::new(
                         ErrorKind::Other,
@@ -129,7 +129,6 @@ impl Router {
                             io::Error::new(
                                 ErrorKind::Other,
                                 format!("An error occured when building a response: {}", err)
-                                    .to_owned(),
                             )
                         })
                 })

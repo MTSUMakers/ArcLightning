@@ -24,5 +24,5 @@ pub fn toml_to_hashmap(toml_filepath: &PathBuf) -> Result<HashMap<String, Game>,
     file.read_to_string(&mut games_toml)?;
 
     // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e))
+    toml::from_str(&games_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
 }
