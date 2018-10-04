@@ -70,10 +70,17 @@ impl Router {
     }
 
     fn invalid_endpoint(&self) -> ResponseFuture {
-        let mut response = Response::new(Body::empty());
-        *response.body_mut() = Body::from("uwu 404 not foundu hiss".to_owned());
-        *response.status_mut() = StatusCode::NOT_FOUND;
-        Box::new(future::ok(response))
+        Box::new(future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("uwu 404 not foundu hiss".to_owned()))
+                .map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                }),
+        ))
     }
 
     fn list_games(&self) -> ResponseFuture {
@@ -125,8 +132,6 @@ impl Router {
                 });
 
                 games_list.map(|games_list| {
-                    let mut response = Response::new(Body::empty());
-
                     let game = games_list.get(&game_id).ok_or_else(|| {
                         io::Error::new(
                             ErrorKind::Other,
