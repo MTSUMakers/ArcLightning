@@ -88,7 +88,7 @@ impl Router {
                 )
             })
             .and_then(|games| {
-                serde_json::to_string(&*games).map_err(|e| io::Error::new(ErrorKind::Other, e))
+                serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
             })
             .and_then(|body| Ok(Body::from(body)))
         {
@@ -112,8 +112,7 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex lock on games list: {}", err)
-                    .to_owned(),
+                    format!("Failed to acquire mutex lock on games list: {}", err).to_owned(),
                 )
             })
             .map(|body| String::from_utf8(body.to_vec()).unwrap())
@@ -155,10 +154,16 @@ impl Router {
                     *response.body_mut() = Body::from("Starting game!".to_owned());
                     *response.status_mut() = StatusCode::OK;
                     Ok(response)
+                    /*
+                    Ok(Response::builder()
+                        .status(StatusCode::OK)
+                        .body(Body::from("Starting game!".to_owned()))
+                    */
                 });
                 response_future
-            });
-        Box::new(response.flatten())
+            })
+            .flatten();
+        Box::new(response)
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
