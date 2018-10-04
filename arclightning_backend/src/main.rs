@@ -177,12 +177,12 @@ fn toml_to_hashmap(toml_filepath: PathBuf) -> Result<HashMap<String, Game>, io::
     toml::from_str(&games_toml).map_err(|e| io::Error::new(ErrorKind::Other, e))
 }
 
-fn main() {
+fn main() -> Result<(), io::Error> {
     // Read initial games toml config
     let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
 
     // Store games locally on server
-    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath).unwrap();
+    let games: HashMap<String, Game> = toml_to_hashmap(toml_filepath)?;
 
     // put the games data into the router struct
     let router = Router::new(games);
@@ -196,6 +196,8 @@ fn main() {
 
     println!("Listening on http://{}", addr);
     hyper::rt::run(server);
+
+    Ok(())
 }
 
 #[cfg(test)]
