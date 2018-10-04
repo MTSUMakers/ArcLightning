@@ -124,33 +124,31 @@ impl Router {
                     )
                 });
 
-                let response_future = games_list.map(|games_list| {
+                games_list.map(|games_list| {
                     let mut response = Response::new(Body::empty());
 
-                    let game = games_list
-                        .get(&game_id)
-                        .ok_or_else(|| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                "Failed to find game in list of available games".to_owned(),
-                            )
-                        })?;
+                    let game = games_list.get(&game_id).ok_or_else(|| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            "Failed to find game in list of available games".to_owned(),
+                        )
+                    })?;
 
                     let exe_path = game.exe_path.clone();
                     let exe_args = game.exe_args.clone();
 
                     Command::new(exe_path).args(exe_args).spawn()?;
 
-                    *response.body_mut() = Body::from("Starting game!".to_owned());
-                    *response.status_mut() = StatusCode::OK;
-                    Ok(response)
-                    /*
-                    Ok(Response::builder()
+                    Response::builder()
                         .status(StatusCode::OK)
                         .body(Body::from("Starting game!".to_owned()))
-                    */
-                });
-                response_future
+                        .map_err(|_e| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                "Failed to acquire mutex lock on games list".to_owned(),
+                            )
+                        })
+                })
             })
             .flatten();
         Box::new(response)
