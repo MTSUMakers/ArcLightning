@@ -84,8 +84,7 @@ impl Router {
     }
 
     fn list_games(&self) -> ResponseFuture {
-        let mut response = Response::new(Body::empty());
-        let response_tuple = match self
+        let (body, status) = match self
             .games_list
             .lock()
             .map_err(|_e| {
@@ -105,10 +104,17 @@ impl Router {
                 StatusCode::INTERNAL_SERVER_ERROR,
             ),
         };
-        *response.body_mut() = response_tuple.0;
-        *response.status_mut() = response_tuple.1;
-
-        Box::new(future::ok(response))
+        Box::new(future::result(
+            Response::builder()
+                .status(status)
+                .body(body)
+                .map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                }),
+        ))
     }
 
     fn start_game(&self, req_body: Body) -> ResponseFuture {
