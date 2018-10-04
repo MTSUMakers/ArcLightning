@@ -117,8 +117,8 @@ impl Router {
                         )
                     })?;
 
-                    let exe_path = game.exe_path();
-                    let exe_args = game.exe_args();
+                    let exe_path = game.exe_path.clone();
+                    let exe_args = game.exe_args.clone();
 
                     Command::new(exe_path).args(exe_args).spawn()?;
 

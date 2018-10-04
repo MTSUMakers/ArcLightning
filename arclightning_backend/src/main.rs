@@ -5,12 +5,12 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
-mod game_config;
+mod game;
 mod router;
 mod tests;
 
 use futures::Future;
-use game_config::{Game, toml_to_hashmap};
+use game::{Game, toml_to_hashmap};
 use hyper::Server;
 use std::collections::HashMap;
 use std::io::{self, ErrorKind};

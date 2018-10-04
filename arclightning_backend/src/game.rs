@@ -13,18 +13,9 @@ pub struct Game {
     genres: Vec<String>,
     thumbnail_path: PathBuf,
     #[serde(skip_serializing)]
-    exe_path: PathBuf,
+    pub exe_path: PathBuf,
     #[serde(skip_serializing)]
-    exe_args: Vec<String>,
-}
-
-impl Game {
-    pub fn exe_path(&self) -> PathBuf {
-        self.exe_path.clone()
-    }
-    pub fn exe_args(&self) -> Vec<String> {
-        self.exe_args.clone()
-    }
+    pub exe_args: Vec<String>,
 }
 
 pub fn toml_to_hashmap(toml_filepath: &PathBuf) -> Result<HashMap<String, Game>, io::Error> {
