@@ -6,12 +6,14 @@ extern crate serde_json;
 extern crate toml;
 
 mod game;
+mod password;
 mod router;
 mod tests;
 
 use futures::Future;
 use game::{toml_to_hashmap, Game};
 use hyper::Server;
+
 use std::collections::HashMap;
 use std::io::{self, ErrorKind};
 use std::path::PathBuf;
@@ -37,6 +39,5 @@ fn main() -> Result<(), io::Error> {
 
     println!("Listening on http://{}", addr);
     hyper::rt::run(server);
-
     Ok(())
 }

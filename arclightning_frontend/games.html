@@ -53,6 +53,15 @@
 
 	]
             },
-        });
+        })
+        var keypress = new Vue({
+                el: '#keypress',
+                mounted: function () {
+                    document.addEventListener("keyup", (e) => {
+                        // redirect to demonstration.html if 'L' key is pressed
+                        if (e.keyCode == 76) { window.location.href = 'demonstration.html' }
+                    })
+                }
+            })
     </script>
 </html>
