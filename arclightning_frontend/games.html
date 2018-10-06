@@ -40,8 +40,8 @@
 		<h1>Arc Lightning</h1>
 	   </div>
             <div class="row" id="games">
-                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" >
-	
+<!--                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" > -->
+                <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }" >
 		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
                 <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }}</div>	
                 
@@ -57,75 +57,74 @@
 		document.addEventListener('keydown', this.onKeyDown);
 	    },
             data: {
-		selectedIndex: 0,
-                items: [
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-
-	]
+		selectedIndex: 'smash',
+		intIndex: 0,
+                items: {
+                    'smash' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'touhou' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                    'meltyblood' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'smash2' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood2' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou2' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                   'meltyBlood3' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                    'smash3' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood3' :{name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou3' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+	}
             },
 
 	methods: {
 		sendSelectedGame: function() {
 			//check to see if game exists
-			var gameSelected = this.items[this.selectedIndex].exe_path
+			var gameSelected = this.items[this.selectedIndex];
 			if(gameSelected)
+				alert(this.selectedIndex)
 				axios.post('http://localhost:8000', {
-					id:gameSelected
+					id:this.selectedIndex
 			})
-			/*debugging stuff*/
-			/*.then(function(response){
-				alert(response);
-			})
-			.catch(function (error) {
-				alert(gameSelected);
-			}) */
-			
 			
 
-		/* ajax functionality in case we dont end up using axios
-	
-			if (gameSelected)
-				$.ajax({ 
-					type: 'POST',
-					url: 'http://localhost:8080',
-					//sends path to executable for selected game
-					data: {id: gameSelected},
-				}) */
 		},
 
-		onKeyDown(e){
-			switch(e.keyCode){
-				//case 38 is down arrow, case 40 is up arrow.
-				//38 and 40 will have to be changed to be able to be more dynamic because right nwo its simply based off of 5 columns, 2 rows
-				case 37:
-					if(this.selectedIndex != 0){
-						this.selectedIndex--;
-					}break;
-				case 38:
-					if(this.selectedIndex >= 5){ 
-						this.selectedIndex -= 5;
-					}break;
-				case 39:
-					if(this.selectedIndex != this.items.length-1){
-						this.selectedIndex++;
-					}break;
-				case 40:
-					if(this.selectedIndex < 5){ 
-						this.selectedIndex += 5;
-					}break;
-				case 13:
+		onKeyDown(event){
+			var ids = Object.keys(this.items);
+			switch(event.key){
+				case "ArrowRight":
+					for(var i = 0; i < ids.length-1; i++){
+						if(this.selectedIndex == ids[i]){
+							this.selectedIndex = ids[i+1];
+							break;
+						}
+					}
+					break;
+				case "ArrowLeft":
+					for(var i = 1; i < ids.length; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i-1];
+							break;
+						}
+					}
+					break;
+				case "ArrowUp":
+					for(var i = 5; i < ids.length; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i-5];
+							break;
+						}
+					}
+				
+					break;
+				case "ArrowDown":
+					for(var i = 0; i < ids.length-5; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i+5];
+							break;
+						}
+					}
+					break;
+				case "Enter":
 					this.sendSelectedGame();
-					break;	 
+					break;
 			}
 		}
 	},
