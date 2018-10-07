@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+         <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
+	
+        <meta name="viewport" content="width=device-width, initial-scale=1">  
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+          <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <!-- production version, optimized for size and speed -->
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<style>
+ 	h1{
+         	font-family: 'Do Hyeon', sans-serif;
+         	font-size:64px;
+       }
+	
+	.selectedClass {
+		background-color: blue;
+	}
+	.unselectedClass {
+		border: 1px solid black;
+		height: 42vh;
+		padding: 10px;
+		margin-bottom: 15px;
+		margin-left: 20px;
+		margin-right: 20px;
+	}
+	</style>
+    </head>
+    <body>
+        <div class="container-fluid">
+	   <div>
+		<h1>Arc Lightning</h1>
+	   </div>
+            <div class="row" id="games">
+<!--                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" > -->
+                <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }" >
+		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
+                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }}</div>	
+                
+		</div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#games',
+	    created(){
+		this.onKeyDown = this.onKeyDown.bind(this);
+		document.addEventListener('keydown', this.onKeyDown);
+	    },
+            data: {
+		selectedIndex: 'smash',
+		intIndex: 0,
+                items: {
+                    'smash' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'touhou' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                    'meltyblood' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'smash2' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood2' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou2' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                   'meltyBlood3' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                    'smash3' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood3' :{name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou3' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+	}
+            },
+
+	methods: {
+		sendSelectedGame: function() {
+			//check to see if game exists
+			var gameSelected = this.items[this.selectedIndex];
+			if(gameSelected)
+				alert(this.selectedIndex)
+				axios.post('http://localhost:8000', {
+					id:this.selectedIndex
+			})
+			
+
+		},
+
+		onKeyDown(event){
+			var ids = Object.keys(this.items);
+			switch(event.key){
+				case "l":
+					window.location.href='demonstration.html';
+					alert("mushed");
+					break;
+				case "ArrowRight":
+					for(var i = 0; i < ids.length-1; i++){
+						if(this.selectedIndex == ids[i]){
+							this.selectedIndex = ids[i+1];
+							break;
+						}
+					}
+					break;
+				case "ArrowLeft":
+					for(var i = 1; i < ids.length; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i-1];
+							break;
+						}
+					}
+					break;
+				case "ArrowUp":
+					for(var i = 5; i < ids.length; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i-5];
+							break;
+						}
+					}
+				
+					break;
+				case "ArrowDown":
+					for(var i = 0; i < ids.length-5; i++){
+						if(this.selectedIndex == ids[i]){	
+							this.selectedIndex = ids[i+5];
+							break;
+						}
+					}
+					break;
+				case "Enter":
+					this.sendSelectedGame();
+					break;
+			}
+		}
+	},
+        });
+    </script>
+</html>
