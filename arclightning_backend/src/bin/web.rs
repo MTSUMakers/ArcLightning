@@ -1,13 +1,21 @@
-use super::*;
+extern crate futures;
+extern crate hyper;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+
 use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
+use std::collections::HashMap;
+use std::io::{self, ErrorKind};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
 #[derive(Debug, Clone)]
 pub struct WebRouter {
-    games_list: Arc<Mutex<HashMap<String, Game>>>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -34,15 +42,13 @@ impl hyper::service::NewService for WebRouter {
     type InitError = Error;
     fn new_service(&self) -> Self::Future {
         Box::new(future::ok(Self {
-            games_list: self.games_list.clone(),
         }))
     }
 }
 
 impl WebRouter {
-    pub fn new(games_list: HashMap<String, Game>) -> Self {
+    pub fn new() -> Self {
         WebRouter {
-            games_list: Arc::new(Mutex::new(games_list)),
         }
     }
 
@@ -63,7 +69,6 @@ impl WebRouter {
     // TODO: implement these functions
 
     fn register(&self, req_body: Body) -> ResponseFuture {
-        let games_list = self.games_list.clone();
 
         // TODO: parse body into username and password
         let response = req_body
@@ -73,12 +78,11 @@ impl WebRouter {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err)
                 )
-            }).flatten();
+            });
         Box::new(response)
     }
 
     fn signin(&self, req_body: Body) -> ResponseFuture {
-        let games_list = self.games_list.clone();
 
         // TODO: parse body into username and password
         let response = req_body
@@ -88,12 +92,11 @@ impl WebRouter {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err)
                 )
-            }).flatten();
+            });
         Box::new(response)
     }
 
     fn check_in(&self, req_body: Body) -> ResponseFuture {
-        let games_list = self.games_list.clone();
 
         // TODO: parse body into key
         let response = req_body
@@ -103,12 +106,11 @@ impl WebRouter {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err)
                 )
-            }).flatten();
+            });
         Box::new(response)
     }
 
     fn check_out(&self, req_body: Body) -> ResponseFuture {
-        let games_list = self.games_list.clone();
 
         // TODO: parse body into key
         let response = req_body
@@ -118,12 +120,11 @@ impl WebRouter {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err)
                 )
-            }).flatten();
+            });
         Box::new(response)
     }
 
     fn check_settings(&self, req_body: Body) -> ResponseFuture {
-        let games_list = self.games_list.clone();
 
         // TODO: parse body into key
         let response = req_body
@@ -133,7 +134,7 @@ impl WebRouter {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err)
                 )
-            }).flatten();
+            });
         Box::new(response)
     }
 
