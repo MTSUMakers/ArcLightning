@@ -2,6 +2,7 @@ use super::*;
 use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
+use std::path::Path;
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
@@ -13,6 +14,11 @@ pub struct Router {
 #[derive(Debug, Deserialize, Clone)]
 struct StartGameRequest {
     id: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct ServeStaticFileRequest {
+    target_file: String,
 }
 
 impl hyper::service::Service for Router {
@@ -54,7 +60,7 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when constructing 404 error: {}", err)
+                        format!("An error occured when constructing 404 error: {}", err),
                     )
                 }),
         ))
@@ -67,7 +73,7 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list: {}", err)
+                    format!("Failed to acquire mutex on games list: {}", err),
                 )
             }).and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
@@ -97,7 +103,7 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to parse byte string: {}", err)
+                    format!("Failed to parse byte string: {}", err),
                 )
             }).and_then(|body| {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
@@ -128,7 +134,7 @@ impl Router {
                         .map_err(|err| {
                             io::Error::new(
                                 ErrorKind::Other,
-                                format!("An error occured when building a response: {}", err)
+                                format!("An error occured when building a response: {}", err),
                             )
                         })
                 })
@@ -136,51 +142,45 @@ impl Router {
         Box::new(response)
     }
 
-    fn serve_static_file(&self, req_body: Body, valid_files) -> ResponseFuture {
+    fn serve_static_file(
+        &self,
+        request: Request<Body>,
+        valid_files: Vec<PathBuf>,
+    ) -> ResponseFuture {
         // TODO: is this the right root dir?  from where will we serve?
         let root = Path::new(".");
 
-        let response = req_body
-            .concat2()
-            .map_err(|err| {
-                io::Error::new(
-                    ErrorKind::Other,
-                    format!("Failed to parse byte string: {}", err)
-                )
-            }).and_then(|body| {
-                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).and_then(move |request_body: StartGameRequest| {
+        // this is a GET request
 
-                // interpret file to serve
-                let static_file = &request_body.target_file.clone();
-                let request = static_file; // TODO: this is wrong
+        // validate existence of file
 
-                // validate existence of file
-                let resolve_future = hyper_staticfile::resolve(&root, &request);
+        // resolve request
+        let resolve_future = hyper_staticfile::resolve(&root, &request);
 
-                // serve the file
-                resolve_future.map(move |result| {
-                    hyper_staticfile::ResponseBuilder::new()
-                        .build(&request, result)
-                        .status(StatusCode::OK)
-                        .body(Body::from("Serving file.".to_owned()))
-                        .map_err(|err| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("An error occured when building a response: {}", err)
-                            )
-                        })
+        // serve the file
+        let response = resolve_future.map(move |result| {
+            hyper_staticfile::ResponseBuilder::new()
+                .build(&request, result)
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when building a response: {}", err),
+                    )
+                })
+        }).and_then(|response| future::result(response));
 
-                });
-
-            }).flatten();
         Box::new(response)
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
+        // TODO: test case for now
+        let valid_files: Vec<PathBuf> = vec![PathBuf::from("test_file.html")];
+        
+
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request.into_body()),
+            (&Method::GET, "test_file.html") => self.serve_static_file(request, valid_files),
             _ => self.invalid_endpoint(),
         }
     }
