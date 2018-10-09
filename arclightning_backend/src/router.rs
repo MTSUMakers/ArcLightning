@@ -136,6 +136,47 @@ impl Router {
         Box::new(response)
     }
 
+    fn serve_static_file(&self, req_body: Body, valid_files) -> ResponseFuture {
+        // TODO: is this the right root dir?  from where will we serve?
+        let root = Path::new(".");
+
+        let response = req_body
+            .concat2()
+            .map_err(|err| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to parse byte string: {}", err)
+                )
+            }).and_then(|body| {
+                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
+            }).and_then(move |request_body: StartGameRequest| {
+
+                // interpret file to serve
+                let static_file = &request_body.target_file.clone();
+                let request = static_file; // TODO: this is wrong
+
+                // validate existence of file
+                let resolve_future = hyper_staticfile::resolve(&root, &request);
+
+                // serve the file
+                resolve_future.map(move |result| {
+                    hyper_staticfile::ResponseBuilder::new()
+                        .build(&request, result)
+                        .status(StatusCode::OK)
+                        .body(Body::from("Serving file.".to_owned()))
+                        .map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("An error occured when building a response: {}", err)
+                            )
+                        })
+
+                });
+
+            }).flatten();
+        Box::new(response)
+    }
+
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),

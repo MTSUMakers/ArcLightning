@@ -1,5 +1,6 @@
 extern crate futures;
 extern crate hyper;
+extern crate hyper_staticfile;
 #[macro_use]
 extern crate serde_derive;
 extern crate rand;
