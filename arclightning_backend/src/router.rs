@@ -6,6 +6,11 @@ use std::path::Path;
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
+// very simple way to avoid path exploits, only for Windows OS atm
+fn strip_path(s: &str) -> String {
+    s.replace(r"..\", "")
+}
+
 #[derive(Debug, Clone)]
 pub struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
@@ -158,16 +163,17 @@ impl Router {
         let resolve_future = hyper_staticfile::resolve(&root, &request);
 
         // serve the file
-        let response = resolve_future.map(move |result| {
-            hyper_staticfile::ResponseBuilder::new()
-                .build(&request, result)
-                .map_err(|err| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        format!("An error occured when building a response: {}", err),
-                    )
-                })
-        }).and_then(|response| future::result(response));
+        let response = resolve_future
+            .map(move |result| {
+                hyper_staticfile::ResponseBuilder::new()
+                    .build(&request, result)
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
+            }).and_then(|response| future::result(response));
 
         Box::new(response)
     }
@@ -175,7 +181,6 @@ impl Router {
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: test case for now
         let valid_files: Vec<PathBuf> = vec![PathBuf::from("test_file.html")];
-        
 
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
