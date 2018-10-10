@@ -41,10 +41,13 @@
 	   </div>
             <div class="row" id="games">
 <!--                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" > -->
-                <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }" >
+<!--        <p>{{ sortAlphabetical() }}</p>       -->
+	 <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }" >
+<!--		<span>{{ sortAlphabetical() }}</span> -->
+		
 		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
-                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }}</div>	
-                
+                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }}</div>
+		<!--{{ item.genre[0] }} -->
 		</div>
             </div>
         </div>
@@ -57,21 +60,41 @@
 		document.addEventListener('keydown', this.onKeyDown);
 	    },
             data: {
-		selectedIndex: 'smash',
-		intIndex: 0,
+		//0 for alpha, 1 for genre
+//		sortMethod: 0,
+		selectedIndex: "touhou" ,
+		//intIndex: 0,
                 items: {
-                    'smash' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
-                    'touhou' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
-                    'meltyblood' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
-                   'smash2' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
-                    'meltyBlood2' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
-                   'touhou2' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
-                   'meltyBlood3' : {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
-                    'smash3' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png'},
-                    'meltyBlood3' :{name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
-                   'touhou3' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                    'smash' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'touhou' : {name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                    'meltyblood' : {name: "Melty Blood", description: "fighter with waifus", genre: ["ygenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'smash2' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["dgenre", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood2' : {name: "Melty Blood", description: "fighter with waifus", genre: ["agenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou2' : {name: "Touhou", description: "bullet hell with waifus", genre: ["ygenre", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
+                   'meltyBlood3' : {name: "Melty Blood", description: "fighter with waifus", genre: ["cgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                    'smash3' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png'},
+                    'meltyBlood3' :{name: "Melty Blood", description: "fighter with waifus", genre: ["zgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg'},
+                   'touhou3' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
 	}
             },
+		
+	computed:{
+		alphSort: function() {
+			//idk if this even does anything
+			this.items = this.sortAlphabetical();
+			this.selectedIndex = Object.keys(this.items)[0];
+			return this.sortAlphabetical();
+		},
+		genreSort: function() {
+			this.items = this.sortGenre();
+			return this.sortGenre();
+		},
+		firstVal : function() {
+			this.selectedIndex = Object.keys(this.items)[0];
+			return Object.keys(this.items)[0];
+		}
+	
+	},
 
 	methods: {
 		sendSelectedGame: function() {
@@ -82,13 +105,62 @@
 				axios.post('http://localhost:8000', {
 					id:this.selectedIndex
 			})
-			
-
 		},
+
+		sortAlphabetical: function(){
+			//vue has a lot of great methods for arrays, however our game objects are dictionaries stored inside another dictionary. So my strategry here was to simply pipe the data into an array, use the sort method, then pipe it back into a dictionary, which dynamically updates site as keys are pressed
+			var sortedArr = [];
+			for(var key in this.items){
+				sortedArr[sortedArr.length] = key;
+			}	
+			sortedArr.sort();
+			var resultDict = {};
+			for(var i = 0; i < sortedArr.length; i++){
+				resultDict[sortedArr[i]] = this.items[sortedArr[i]];
+			}
+			this.items = resultDict;
+			return resultDict;			
+		},
+
+		sortGenre: function(){
+			//create array of unique genres
+			var genreArr = [];
+			var unique = true;
+			for(var key in this.items){
+				unique = true;
+				for(var gen in genreArr){
+					if(this.items[key].genre[0] == genreArr[gen]){
+						unique = false;	
+					}
+				}
+				if(unique == true){
+				genreArr[genreArr.length] = this.items[key].genre[0];
+				}
+			}
+			//put game objects back into a dictionary based on the unique genres
+			var resultDict = {};
+			//for each unique genre and for each game object, compare the genre from genArr with the one inside the game object. If they match, add it to the dictionary.
+			for (var gen in genreArr){
+				for(key in this.items){
+					if(this.items[key].genre[0] == genreArr[gen]){
+						resultDict[key] = this.items[key];
+					}
+				}	
+			}
+			this.items = resultDict;
+			return resultDict;
+		},
+		
 
 		onKeyDown(event){
 			var ids = Object.keys(this.items);
 			switch(event.key){
+				case "k":
+					this.sortGenre();
+					break;
+				case "h":
+					this.sortAlphabetical();
+					break;
 				case "l":
 					window.location.href='demonstration.html';
 					break;
