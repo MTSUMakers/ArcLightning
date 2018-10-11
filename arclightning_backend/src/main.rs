@@ -2,58 +2,41 @@ extern crate futures;
 extern crate hyper;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate serde_json;
 extern crate toml;
 extern crate rand;
 
 
-use futures::future;
-use hyper::rt::{Future, Stream};
-use hyper::service::service_fn;
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+mod game;
+mod password;
+mod router;
+mod tests;
+
+use futures::Future;
+use game::{toml_to_hashmap, Game};
+use hyper::Server;
+
+use std::collections::HashMap;
+use std::io::{self, ErrorKind};
 use std::path::PathBuf;
+use std::process::Command;
+use std::sync::{Arc, Mutex};
 
-// after this concept is further understood, will switch to 'Either'
-type ResponseFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
+fn main() -> Result<(), io::Error> {
+    // Read initial games toml config
+    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-struct Game {
-    name: String,
-    description: String,
-    genre: Vec<String>,
-    thumbnail_path: PathBuf,
-    exe_path: PathBuf,
-}
+    // Store games locally on server
+    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath)?;
 
-fn router(request: Request<Body>) -> ResponseFuture {
-    let mut games_list: Vec<Game> = Vec::new();
+    // put the games data into the router struct
+    let router = router::Router::new(games);
 
-    let mut response = Response::new(Body::empty());
-
-    match (request.method(), request.uri().path()) {
-        // TODO: get will send over games list
-        (&Method::GET, "/api/v1/list_games") => {
-            // TODO: convert a vector of struct "Game" into a single json:
-            *response.body_mut() = Body::from("games will go here");
-        }
-        // TODO: post will probably figure out which game to launch?
-        (&Method::POST, "/echo") => {
-            *response.body_mut() = request.into_body();
-        }
-        _ => {
-            *response.status_mut() = StatusCode::NOT_FOUND;
-        }
-    }
-
-    Box::new(future::ok(response))
-}
-
-fn main() {
+    // Host server
     let addr = ([127, 0, 0, 1], 3000).into();
 
     let server = Server::bind(&addr)
-        .serve(|| service_fn(router))
+        .serve(router)
         .map_err(|err| eprintln!("server error: {}", err));
 
     println!("Listening on http://{}", addr);
@@ -113,5 +96,7 @@ mod test {
 }
 #[cfg(splash)]
 mod splash {
+  
+    Ok(())
 
 }
