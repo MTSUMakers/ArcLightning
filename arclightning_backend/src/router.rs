@@ -2,13 +2,23 @@ use super::*;
 use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
+use std::fs::read_dir;
 use std::path::Path;
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
-// very simple way to avoid path exploits, only for Windows OS atm
-fn strip_path(s: &str) -> String {
-    s.replace(r"..\", "")
+fn visit_dirs(dir: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
+    let result = if dir.is_dir() {
+        read_dir(dir)?
+            .flatten()
+            .map(|x| x.path())
+            .flat_map(visit_dirs)
+            .flatten()
+            .collect()
+    } else {
+        vec![dir]
+    };
+    Ok(result)
 }
 
 #[derive(Debug, Clone)]
@@ -91,14 +101,16 @@ impl Router {
             ),
         };
         Box::new(future::result(
-            Response::builder().status(status)
-            .header(hyper::header::CONTENT_TYPE, "application/json")
-            .body(body).map_err(|_e| {
-                io::Error::new(
-                    ErrorKind::Other,
-                    "Failed to acquire mutex lock on games list".to_owned(),
-                )
-            }),
+            Response::builder()
+                .status(status)
+                .header(hyper::header::CONTENT_TYPE, "application/json")
+                .body(body)
+                .map_err(|_e| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to acquire mutex lock on games list".to_owned(),
+                    )
+                }),
         ))
     }
 
@@ -153,23 +165,26 @@ impl Router {
 
     fn serve_static_file(
         &self,
+        root: PathBuf,
         valid_files: Vec<PathBuf>,
         mut request: Request<Body>,
     ) -> ResponseFuture {
-        // TODO: is this the right root dir?  from where will we serve?
-        //let root = Path::new(".");
-        let root: PathBuf = [r"..", "arclightning_frontend"].iter().collect();
-
         // TODO: set up a 404 page. Maybe hyper static file does it?
+        //
+        // TODO: remove unwraps
 
-        if &request.uri().path() == &"" || &request.uri().path() == &"/" {
+        let requested_path = &root.join(
+            PathBuf::from(&request.uri().path())
+                .strip_prefix("/")
+                .unwrap(),
+        );
+
+        if requested_path == &root || requested_path == &root.join(PathBuf::from(r"\\")) {
             *request.uri_mut() = "/index.html".parse().unwrap();
-        }
-
-        if !valid_files.contains(&PathBuf::from(&request.uri().path())){
+        } else if !valid_files.contains(&requested_path) {
             *request.uri_mut() = "/404.html".parse().unwrap();
         }
-        
+
         // resolve request
         let resolve_future = hyper_staticfile::resolve(&root, &request);
 
@@ -188,17 +203,13 @@ impl Router {
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
-        // TODO: test case for now
-        let valid_files: Vec<PathBuf> = vec![
-            PathBuf::from("/index.html"),
-            PathBuf::from("/games.html"),
-            PathBuf::from("/demonstration.html"),
-        ];
+        let root_dir: PathBuf = ["..", "arclightning_frontend"].iter().collect();
+        let valid_files: Vec<PathBuf> = visit_dirs(root_dir.clone()).unwrap();
 
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request),
-            (&Method::GET, _) => self.serve_static_file(valid_files, request),
+            (&Method::GET, _) => self.serve_static_file(root_dir, valid_files, request),
             _ => self.invalid_endpoint(),
         }
     }
