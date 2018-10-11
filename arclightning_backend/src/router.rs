@@ -194,7 +194,11 @@ impl Router {
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: test case for now
-        let valid_files: Vec<PathBuf> = vec![PathBuf::from("test_file.html")];
+        let valid_files: Vec<PathBuf> = vec![
+            PathBuf::from("index.html"),
+            PathBuf::from("games.html"),
+            PathBuf::from("demonstration.html"),
+        ];
 
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
