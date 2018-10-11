@@ -2,10 +2,9 @@ extern crate futures;
 extern crate hyper;
 #[macro_use]
 extern crate serde_derive;
+extern crate rand;
 extern crate serde_json;
 extern crate toml;
-extern crate rand;
-
 
 mod game;
 mod password;
@@ -41,6 +40,7 @@ fn main() -> Result<(), io::Error> {
 
     println!("Listening on http://{}", addr);
     hyper::rt::run(server);
+    Ok(())
 }
 
 #[cfg(test)]
@@ -91,12 +91,5 @@ mod test {
 
         assert_eq!(games, test_games);
     }
-
- 
-}
-#[cfg(splash)]
-mod splash {
-  
-    Ok(())
 
 }
