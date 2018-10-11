@@ -160,6 +160,12 @@ impl Router {
         //let root = Path::new(".");
         let root: PathBuf = [r"..", "arclightning_frontend"].iter().collect();
 
+        // TODO: set up a 404 page. Maybe hyper static file does it?
+
+        if &request.uri().path() == &"" || &request.uri().path() == &"/" {
+            *request.uri_mut() = "/index.html".parse().unwrap();
+        }
+
         /*
         if !valid_files.contains(&PathBuf::from(&request.uri().path())){
             *request.uri_mut() = "404.html".parse().unwrap();
