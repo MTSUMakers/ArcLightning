@@ -40,7 +40,6 @@
 		<h1>Arc Lightning</h1>
 	   </div>
             <div class="row" id="games">
-<!--                <div class="col-sm-2 unselectedClass" v-for="(item,index) in items" v-bind:class="{ selectedClass: index == selectedIndex }" > -->
 <!--        <p>{{ sortAlphabetical() }}</p>       -->
 	 <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }" >
 <!--		<span>{{ sortAlphabetical() }}</span> -->
@@ -56,14 +55,11 @@
         var app = new Vue({
             el: '#games',
 	    created(){
-		this.onKeyDown = this.onKeyDown.bind(this);
-		document.addEventListener('keydown', this.onKeyDown);
+		this.onKeyUp = this.onKeyUp.bind(this);
+		document.addEventListener('keyup', this.onKeyUp);
 	    },
             data: {
-		//0 for alpha, 1 for genre
-//		sortMethod: 0,
 		selectedIndex: "touhou" ,
-		//intIndex: 0,
                 items: {
                     'smash' : {name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png'},
                     'touhou' : {name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
@@ -152,7 +148,7 @@
 		},
 		
 
-		onKeyDown(event){
+		onKeyUp(event){
 			var ids = Object.keys(this.items);
 			switch(event.key){
 				case "k":
