@@ -166,11 +166,9 @@ impl Router {
             *request.uri_mut() = "/index.html".parse().unwrap();
         }
 
-        /*
         if !valid_files.contains(&PathBuf::from(&request.uri().path())){
-            *request.uri_mut() = "404.html".parse().unwrap();
+            *request.uri_mut() = "/404.html".parse().unwrap();
         }
-        */
         
         // resolve request
         let resolve_future = hyper_staticfile::resolve(&root, &request);
