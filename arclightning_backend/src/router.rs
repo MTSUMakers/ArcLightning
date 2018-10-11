@@ -91,7 +91,9 @@ impl Router {
             ),
         };
         Box::new(future::result(
-            Response::builder().status(status).body(body).map_err(|_e| {
+            Response::builder().status(status)
+            .header(hyper::header::CONTENT_TYPE, "application/json")
+            .body(body).map_err(|_e| {
                 io::Error::new(
                     ErrorKind::Other,
                     "Failed to acquire mutex lock on games list".to_owned(),
@@ -152,29 +154,18 @@ impl Router {
     fn serve_static_file(
         &self,
         valid_files: Vec<PathBuf>,
-        mut request: Request<Body>
+        mut request: Request<Body>,
     ) -> ResponseFuture {
         // TODO: is this the right root dir?  from where will we serve?
         //let root = Path::new(".");
         let root: PathBuf = [r"..", "arclightning_frontend"].iter().collect();
 
         /*
-        // validate existence of filepath
-        let filepath = match request.uri().path(){
-            "" | "/" => "index.html",
-            filepath => {
-                if valid_files.contains(&PathBuf::from(filepath)) {
-                    filepath
-                } else {
-                    "404 does not exist"
-                }
-            }
-        };
-
-        *request.uri_mut() = filepath.parse().unwrap();
-
+        if !valid_files.contains(&PathBuf::from(&request.uri().path())){
+            *request.uri_mut() = "404.html".parse().unwrap();
+        }
         */
-
+        
         // resolve request
         let resolve_future = hyper_staticfile::resolve(&root, &request);
 
@@ -195,9 +186,9 @@ impl Router {
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: test case for now
         let valid_files: Vec<PathBuf> = vec![
-            PathBuf::from("index.html"),
-            PathBuf::from("games.html"),
-            PathBuf::from("demonstration.html"),
+            PathBuf::from("/index.html"),
+            PathBuf::from("/games.html"),
+            PathBuf::from("/demonstration.html"),
         ];
 
         match (request.method(), request.uri().path()) {

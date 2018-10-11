@@ -43,4 +43,3 @@ fn main() -> Result<(), io::Error> {
     hyper::rt::run(server);
     Ok(())
 }
-
