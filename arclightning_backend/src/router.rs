@@ -143,4 +143,25 @@ impl Router {
             _ => self.invalid_endpoint(),
         }
     }
+
+    fn list_files(dir: PathBuf) -> Result<Vec<PathBuf>, io::Error>{
+        let mut output: Vec<String> = Vec::new();
+        if dir.is_dir(){
+
+        let  path: Vec<_> = fs::read_dir("dir").unwrap()
+        .map(|r| r.unwrap()).collect();
+
+        let mut count=0;
+
+        for _i in path.iter(){
+        output.push( path[count].path().display().to_string());
+        }
+        
+
+
+        }
+        
+        Ok(output)
+
+    }
 }
