@@ -100,8 +100,10 @@ impl Router {
         ))
     }
 
-    fn start_game(&self, req_body: Body) -> ResponseFuture {
+    fn start_game(&self, request: Request<Body>) -> ResponseFuture {
         let games_list = self.games_list.clone();
+
+        let req_body = request.into_body();
 
         let response = req_body
             .concat2()
@@ -149,20 +151,33 @@ impl Router {
 
     fn serve_static_file(
         &self,
-        request: Request<Body>,
         valid_files: Vec<PathBuf>,
+        mut request: Request<Body>
     ) -> ResponseFuture {
         // TODO: is this the right root dir?  from where will we serve?
-        let root = Path::new(".");
+        //let root = Path::new(".");
+        let root: PathBuf = [r"..", "arclightning_frontend"].iter().collect();
 
-        // this is a GET request
+        /*
+        // validate existence of filepath
+        let filepath = match request.uri().path(){
+            "" | "/" => "index.html",
+            filepath => {
+                if valid_files.contains(&PathBuf::from(filepath)) {
+                    filepath
+                } else {
+                    "404 does not exist"
+                }
+            }
+        };
 
-        // validate existence of file
+        *request.uri_mut() = filepath.parse().unwrap();
+
+        */
 
         // resolve request
         let resolve_future = hyper_staticfile::resolve(&root, &request);
 
-        // serve the file
         let response = resolve_future
             .map(move |result| {
                 hyper_staticfile::ResponseBuilder::new()
@@ -174,7 +189,6 @@ impl Router {
                         )
                     })
             }).and_then(|response| future::result(response));
-
         Box::new(response)
     }
 
@@ -184,8 +198,8 @@ impl Router {
 
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
-            (&Method::POST, "/api/v1/start_game") => self.start_game(request.into_body()),
-            (&Method::GET, "test_file.html") => self.serve_static_file(request, valid_files),
+            (&Method::POST, "/api/v1/start_game") => self.start_game(request),
+            (&Method::GET, _) => self.serve_static_file(valid_files, request),
             _ => self.invalid_endpoint(),
         }
     }
