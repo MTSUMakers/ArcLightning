@@ -170,19 +170,22 @@ impl Router {
         mut request: Request<Body>,
     ) -> ResponseFuture {
         // TODO: set up a 404 page. Maybe hyper static file does it?
-        //
-        // TODO: remove unwraps
 
         let requested_path = &root.join(
-            PathBuf::from(&request.uri().path())
-                .strip_prefix("/")
-                .unwrap(),
+            match PathBuf::from(&request.uri().path()).strip_prefix("/") {
+                // strip_prefix(x) returns an error if the PathBuf does not
+                // start with x. This situation should not occur in the web browser
+                // but in case it does, we just return the path without removing
+                // the initial "/"
+                Ok(v) => v,
+                Err(_err) => Path::new(request.uri().path()),
+            },
         );
 
         if requested_path == &root || requested_path == &root.join(PathBuf::from(r"\\")) {
-            *request.uri_mut() = "/index.html".parse().unwrap();
+            *request.uri_mut() = hyper::Uri::from_static("/index.html");
         } else if !valid_files.contains(&requested_path) {
-            *request.uri_mut() = "/404.html".parse().unwrap();
+            *request.uri_mut() = hyper::Uri::from_static("/404.html");
         }
 
         // resolve request
@@ -204,7 +207,10 @@ impl Router {
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         let root_dir: PathBuf = ["..", "arclightning_frontend"].iter().collect();
-        let valid_files: Vec<PathBuf> = visit_dirs(root_dir.clone()).unwrap();
+        let valid_files: Vec<PathBuf> = match visit_dirs(root_dir.clone()) {
+            Ok(v) => v,
+            Err(_err) => vec![PathBuf::from("404.html")],
+        };
 
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
