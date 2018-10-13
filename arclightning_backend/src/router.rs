@@ -2,8 +2,12 @@ use super::*;
 use futures::{future, Stream};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
+use std::collections::HashMap;
 use std::fs::read_dir;
-use std::path::Path;
+use std::io::{self, ErrorKind};
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::{Arc, Mutex};
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 

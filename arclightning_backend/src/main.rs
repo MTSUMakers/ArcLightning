@@ -17,10 +17,8 @@ use game::{toml_to_hashmap, Game};
 use hyper::Server;
 
 use std::collections::HashMap;
-use std::io::{self, ErrorKind};
+use std::io;
 use std::path::PathBuf;
-use std::process::Command;
-use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), io::Error> {
     // Read initial games toml config
