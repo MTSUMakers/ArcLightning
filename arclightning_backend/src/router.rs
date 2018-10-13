@@ -31,11 +31,6 @@ struct StartGameRequest {
     id: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-struct ServeStaticFileRequest {
-    target_file: String,
-}
-
 impl hyper::service::Service for Router {
     type ReqBody = Body;
     type ResBody = Body;
