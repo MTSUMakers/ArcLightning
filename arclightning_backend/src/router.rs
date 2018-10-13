@@ -7,16 +7,16 @@ use std::path::Path;
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
-fn visit_dirs(dir: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
-    let result = if dir.is_dir() {
-        read_dir(dir)?
+fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
+    let result = if path.is_dir() {
+        read_dir(path)?
             .flatten()
             .map(|x| x.path())
-            .flat_map(visit_dirs)
+            .flat_map(list_files)
             .flatten()
             .collect()
     } else {
-        vec![dir]
+        vec![path]
     };
     Ok(result)
 }
@@ -207,7 +207,7 @@ impl Router {
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         let root_dir: PathBuf = ["..", "arclightning_frontend"].iter().collect();
-        let valid_files: Vec<PathBuf> = match visit_dirs(root_dir.clone()) {
+        let valid_files: Vec<PathBuf> = match list_files(root_dir.clone()) {
             Ok(v) => v,
             Err(_err) => vec![PathBuf::from("404.html")],
         };
