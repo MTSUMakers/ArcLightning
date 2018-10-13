@@ -112,9 +112,8 @@ impl Router {
     fn start_game(&self, request: Request<Body>) -> ResponseFuture {
         let games_list = self.games_list.clone();
 
-        let req_body = request.into_body();
-
-        let response = req_body
+        let response = request
+            .into_body()
             .concat2()
             .map_err(|err| {
                 io::Error::new(
