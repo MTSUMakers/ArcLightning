@@ -9,7 +9,6 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
           <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -73,25 +72,6 @@
                    'touhou3' : {name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png'},
 	}
             },
-		
-	computed:{
-		alphSort: function() {
-			//idk if this even does anything
-			this.items = this.sortAlphabetical();
-			this.selectedIndex = Object.keys(this.items)[0];
-			return this.sortAlphabetical();
-		},
-		genreSort: function() {
-			this.items = this.sortGenre();
-			return this.sortGenre();
-		},
-		firstVal : function() {
-			this.selectedIndex = Object.keys(this.items)[0];
-			return Object.keys(this.items)[0];
-		}
-	
-	},
-
 	methods: {
 		sendSelectedGame: function() {
 			//check to see if game exists
@@ -115,7 +95,6 @@
 				resultDict[sortedArr[i]] = this.items[sortedArr[i]];
 			}
 			this.items = resultDict;
-			return resultDict;			
 		},
 
 		sortGenre: function(){
@@ -144,7 +123,6 @@
 				}	
 			}
 			this.items = resultDict;
-			return resultDict;
 		},
 		
 
