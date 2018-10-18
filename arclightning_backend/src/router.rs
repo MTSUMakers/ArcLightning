@@ -186,10 +186,8 @@ impl Router {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
         }
 
-        // resolve request
-        let resolve_future = hyper_staticfile::resolve(&root, &request);
-
-        let response = resolve_future
+        // resolve request and create response
+        let response = hyper_staticfile::resolve(&root, &request)
             .map(move |result| {
                 hyper_staticfile::ResponseBuilder::new()
                     .build(&request, result)
