@@ -180,7 +180,7 @@ impl Router {
             },
         );
 
-        if requested_path == &root || requested_path == &root.join(PathBuf::from(r"\\")) {
+        if requested_path == &root {
             *request.uri_mut() = hyper::Uri::from_static("/index.html");
         } else if !valid_files.contains(&requested_path) {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
