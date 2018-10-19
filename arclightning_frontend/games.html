@@ -65,7 +65,7 @@
         methods: {
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
-                this.ranHex += Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
+                this.ranHex = Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
                 this.qrStr = hostname + this.ranHex
             }
         },
