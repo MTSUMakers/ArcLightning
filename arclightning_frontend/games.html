@@ -65,9 +65,8 @@
         methods: {
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
-                for (var i = 0; i < 64; i++) { this.ranHex += parseInt(window.crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * 16, 10).toString(16) }
+                this.ranHex += Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
                 this.qrStr = hostname + this.ranHex
-                console.log(this.qrStr)
             }
         },
         mounted: function () {
