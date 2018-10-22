@@ -26,12 +26,9 @@
 	 
 <!-- On pressing submit, send  a POST request to http://hostname/api/v1/signin?username=username&password=password, so just change action url to url above to "http://hostname/api/v1/signin" -->
       <form class="formattedText" action="http://httpbin.net/post" method="post" >
-	<h1 class="formattedText">username</h1> 
-	<input type="text" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"name="username" />
-	
-	<h1 class="formattedText">password</h1> 
-	<input type="text" id="password" style="width: 100%; border:none; border-bottom: 2px solid black;" name="password" />
-	<input type="submit" style="margin: 10px 0; width: 100%;" value="submit" />
+	<input type="text" placeholder= "username" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"name="username" /> <br><br>
+	<input type="text" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black;" name="password" /><br><br>
+<input type="submit" style="margin: 10px 0; width: 100%;" value="submit" />
 	</form>
 	</div>
     </div>
