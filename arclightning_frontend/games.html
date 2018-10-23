@@ -1,67 +1,211 @@
-
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-         <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
-	
-        <meta name="viewport" content="width=device-width, initial-scale=1">  
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <!-- Latest compiled and minified JavaScript -->
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-        <!-- production version, optimized for size and speed -->
-        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-	<style>
- 	h1{
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <!-- production version, optimized for size and speed -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script type="text/javascript" src="qrcode.js"></script>
+    <style>
+        h1{
          	font-family: 'Do Hyeon', sans-serif;
          	font-size:64px;
-      }
+       }
+	
+	.selectedClass {
+		background-color: blue;
+	}
+	.unselectedClass {
+		border: 1px solid black;
+		height: 42vh;
+		padding: 10px;
+		margin-bottom: 15px;
+		margin-left: 20px;
+		margin-right: 20px;
+	}
 	</style>
-    </head>
-    <body>
-        <div class="container-fluid">
-	   <div>
-		<h1>Arc Lightning</h1>
-	   </div>
-            <div class="row" id="games">
-                <div class="col-sm-2" style="border: 1px solid black; height:42vh; padding: 10px; margin-bottom:15px; margin-left: 20px; margin-right:20px;" v-for="item in items">
-		<img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "src v-bind:src= "item.thumbnail_path"  />
-                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;"> {{ item.name }} </div>	
-		</div>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2" id="playerOneQR" style="margin-top: 5px;">
+                <div style="font-size: 24px; font-family: 'Do Hyeon'">Player 1 Login</div>
+            </div>
+            <h1 class="col-md-8" style="text-align: center;">Arc Lightning</h1>
+            <div class="col-md-2" align="right" style="margin-top: 5px;" id="playerTwoQR">
+                <div style="font-size: 24px; font-family: 'Do Hyeon'">Player 2 Login</div>
             </div>
         </div>
-    </body>
-    <script type="text/javascript">
-        var app = new Vue({
-            el: '#games',
-            data: {
-                items: [
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
+        <div style="margin-top: 5px" class="row" id="games">
+            <!--        <p>{{ sortAlphabetical() }}</p>       -->
+            <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }">
+                <!--		<span>{{ sortAlphabetical() }}</span> -->
 
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Super Smash Bros", description: "crossover fighting game", genre: ["fighter", "crossover"], thumbnail_path: 'images/peach.png', exe_path: 'C:\\Users\\THISUSER\\SMASHBROS_PATH'},
-                    {name: "Melty Blood", description: "fighter with waifus", genre: ["fighter", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg', exe_path: 'C:\\Users\\THISUSER\\MELTYBLOOD_PATH'},
-                    {name: "Touhou", description: "bullet hell with waifus", genre: ["bullet hell", "anime"], thumbnail_path: 'images/touhouWaifu.png', exe_path: 'C:\\Users\\THISUSER\\TOUHOU_PATH'},
-
-	]
+                <img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "
+                    src v-bind:src="item.thumbnail_path" />
+                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;">
+                    {{ item.name }}</div>
+                <!--{{ item.genre[0] }} -->
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#games',
+        created() {
+            this.onKeyUp = this.onKeyUp.bind(this);
+            document.addEventListener('keyup', this.onKeyUp);
+        },
+        data: {
+            qrStr: '', ranHex: '',
+            selectedIndex: "touhou",
+            items: {
+                'smash': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
+                'touhou': { name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+                'meltyblood': { name: "Melty Blood", description: "fighter with waifus", genre: ["ygenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+                'smash2': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["dgenre", "crossover"], thumbnail_path: 'images/peach.png' },
+                'meltyBlood2': { name: "Melty Blood", description: "fighter with waifus", genre: ["agenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+                'touhou2': { name: "Touhou", description: "bullet hell with waifus", genre: ["ygenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+                'meltyBlood3': { name: "Melty Blood", description: "fighter with waifus", genre: ["cgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+                'smash3': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
+                'meltyBlood3': { name: "Melty Blood", description: "fighter with waifus", genre: ["zgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+                'touhou3': { name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+            }
+        },
+        methods: {
+            sendSelectedGame: function () {
+                //check to see if game exists
+                var gameSelected = this.items[this.selectedIndex];
+                if (gameSelected)
+                    alert(this.selectedIndex)
+                axios.post('http://localhost:8000', {
+                    id: this.selectedIndex
+                })
             },
-        })
-        var keypress = new Vue({
-                el: '#keypress',
-                mounted: function () {
-                    document.addEventListener("keyup", (e) => {
-                        // redirect to demonstration.html if 'L' key is pressed
-                        if (e.keyCode == 76) { window.location.href = 'demonstration.html' }
-                    })
+
+            sortAlphabetical: function () {
+                //vue has a lot of great methods for arrays, however our game objects are dictionaries stored inside another dictionary. So my strategry here was to simply pipe the data into an array, use the sort method, then pipe it back into a dictionary, which dynamically updates site as keys are pressed
+                var sortedArr = [];
+                for (var key in this.items) {
+                    sortedArr[sortedArr.length] = key;
                 }
+                sortedArr.sort();
+                var resultDict = {};
+                for (var i = 0; i < sortedArr.length; i++) {
+                    resultDict[sortedArr[i]] = this.items[sortedArr[i]];
+                }
+                this.items = resultDict;
+            },
+
+            sortGenre: function () {
+                //create array of unique genres
+                var genreArr = [];
+                var unique = true;
+                for (var key in this.items) {
+                    unique = true;
+                    for (var gen in genreArr) {
+                        if (this.items[key].genre[0] == genreArr[gen]) {
+                            unique = false;
+                        }
+                    }
+                    if (unique == true) {
+                        genreArr[genreArr.length] = this.items[key].genre[0];
+                    }
+                }
+                //put game objects back into a dictionary based on the unique genres
+                var resultDict = {};
+                //for each unique genre and for each game object, compare the genre from genArr with the one inside the game object. If they match, add it to the dictionary.
+                for (var gen in genreArr) {
+                    for (key in this.items) {
+                        if (this.items[key].genre[0] == genreArr[gen]) {
+                            resultDict[key] = this.items[key];
+                        }
+                    }
+                }
+                this.items = resultDict;
+            },
+            qrGen: function (hostname) {
+                this.qrStr = '', this.ranHex = ''
+                this.ranHex = Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
+                this.qrStr = hostname + this.ranHex
+            },
+
+            onKeyUp(event) {
+                var ids = Object.keys(this.items);
+                switch (event.key) {
+                    case "k":
+                        this.sortGenre();
+                        break;
+                    case "h":
+                        this.sortAlphabetical();
+                        break;
+                    case "l":
+                        window.location.href = 'demonstration.html';
+                        break;
+                    case "ArrowRight":
+                        for (var i = 0; i < ids.length - 1; i++) {
+                            if (this.selectedIndex == ids[i]) {
+                                this.selectedIndex = ids[i + 1];
+                                break;
+                            }
+                        }
+                        break;
+                    case "ArrowLeft":
+                        for (var i = 1; i < ids.length; i++) {
+                            if (this.selectedIndex == ids[i]) {
+                                this.selectedIndex = ids[i - 1];
+                                break;
+                            }
+                        }
+                        break;
+                    case "ArrowUp":
+                        for (var i = 5; i < ids.length; i++) {
+                            if (this.selectedIndex == ids[i]) {
+                                this.selectedIndex = ids[i - 5];
+                                break;
+                            }
+                        }
+
+                        break;
+                    case "ArrowDown":
+                        for (var i = 0; i < ids.length - 5; i++) {
+                            if (this.selectedIndex == ids[i]) {
+                                this.selectedIndex = ids[i + 5];
+                                break;
+                            }
+                        }
+                        break;
+                    case "Enter":
+                        this.sendSelectedGame();
+                        break;
+                }
+            }
+        },
+        mounted: function () {
+            this.qrGen("example.com/check_in?key=")
+            new QRCode(document.getElementById("playerOneQR"), {
+                text: this.qrStr,
+                width: 150,
+                height: 150
             })
-    </script>
+            this.qrGen("example.com/check_in?key=")
+            new QRCode(document.getElementById("playerTwoQR"), {
+                text: this.qrStr,
+                width: 150,
+                height: 150
+            })
+        }
+    });
+</script>
 </html>

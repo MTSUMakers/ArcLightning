@@ -1,7 +1,9 @@
 extern crate futures;
 extern crate hyper;
+extern crate hyper_staticfile;
 #[macro_use]
 extern crate serde_derive;
+extern crate rand;
 extern crate serde_json;
 extern crate toml;
 
@@ -15,10 +17,8 @@ use game::{toml_to_hashmap, Game};
 use hyper::Server;
 
 use std::collections::HashMap;
-use std::io::{self, ErrorKind};
+use std::io;
 use std::path::PathBuf;
-use std::process::Command;
-use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), io::Error> {
     // Read initial games toml config

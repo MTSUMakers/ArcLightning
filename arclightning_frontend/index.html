@@ -10,6 +10,25 @@
     <!-- Vuejs -->
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <style>
+        .flash {
+            animation-name: flash;
+            animation-duration: 1s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-play-state: running;
+        }
+
+        @keyframes flash {
+            from {
+                color: white;
+            }
+
+            to {
+                color: transparent;
+            }
+        }
+
         .centerItem {
             display: block;
             margin-left: auto;
@@ -19,23 +38,28 @@
         h1 {
             font-family: 'Do Hyeon', sans-serif;
             font-size: 64px;
+            color: white;
+        }
+
+        body {
+            background-color: #101010;
         }
     </style>
 </head>
 
 <body>
-    <div class="row" style="width:100%; height:100vh;">
-        <div class="col-sm-8" style="height:100vh;">
-            <div style="height:50vh; width: 100%;">
-                <img src="images/logo.png" class="centerItem" style="top: 75%">
+    <div class="row centerItem" >
+        <div class="col-sm-9">
+            <div style="width: 100%;">
+                <img src="images/logo.png" class="centerItem" style="width: 100%; margin-top: 200px;">
             </div>
-            <div style="height:50vh;">
-                <h1 style="display:block; position: relative; text-align: center; margin-top: 10vh;">Press any button
+            <div>
+                <h1 class="flash" style="display:block; position: relative; text-align: center; margin-top: 150px;">Press any button
                     to continue</h1>
             </div>
         </div>
-        <div class="col-sm-4" style="height:100vh;">
-            <img src="images/characters/alice.png" class="centerItem" style="position:absolute; bottom:0;">
+        <div class="col-sm-3" style="height:100vh;">
+            <img src="images/characters/alice.png" class="centerItem" style="position:absolute; bottom:0; width: 450px;">
         </div>
         <script>
             var keypress = new Vue({
@@ -51,4 +75,5 @@
             })
         </script>
 </body>
+
 </html>
