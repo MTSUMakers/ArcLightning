@@ -22,7 +22,7 @@ use std::path::PathBuf;
 
 fn main() -> Result<(), io::Error> {
     // Read initial games toml config
-    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
 
     // Store games locally on server
     let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath)?;
