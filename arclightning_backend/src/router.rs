@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
-fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
+pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
     let result = if path.is_dir() {
         read_dir(path)?
             .flatten()

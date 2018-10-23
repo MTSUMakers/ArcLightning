@@ -1,11 +1,53 @@
 #![cfg(test)]
 use super::*;
+use router::list_files;
 use std::sync::{Arc, Mutex};
+
+#[test]
+fn test_paths() {
+    // make sure we're in the right directory
+    use std::env;
+    let path = env::current_dir().unwrap();
+    println!("The current directory is {}", path.display());
+
+    use std::fs::read_dir;
+    let valid_files = list_files(path).unwrap();
+    //println!("Valid files {:#?}", valid_files);
+
+    let toml_path: PathBuf = [
+        r"C:\\",
+        "Users",
+        "Sam",
+        "Documents",
+        "CSCI_4700",
+        "ArcLightning",
+        "arclightning_backend",
+        "asdf.toml",
+    ]
+        .iter()
+        .collect();
+
+    //println!("Target file {:#?}", toml_path);
+
+    assert!(valid_files.contains(&toml_path));
+}
 
 #[test]
 fn test_read_toml() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    //let toml_filepath: PathBuf = ["asdf.toml"].iter().collect();
+    let toml_filepath: PathBuf = [
+        r"C:\\",
+        "Users",
+        "Sam",
+        "Documents",
+        "CSCI_4700",
+        "ArcLightning",
+        "arclightning_backend",
+        "asdf.toml",
+    ]
+        .iter()
+        .collect();
     let config: Config = unpack_toml(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games_config;
@@ -43,7 +85,7 @@ fn test_read_toml() {
 #[test]
 fn test_json_serialization() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let toml_filepath: PathBuf = ["test_files", "server_config.toml"].iter().collect();
     let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
     // serialize as json
@@ -67,7 +109,7 @@ fn test_json_serialization() {
 #[test]
 fn test_games_serialization() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let toml_filepath: PathBuf = ["test_files", "server_config.toml"].iter().collect();
     let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
     let games_clone = games.clone();
