@@ -13,7 +13,7 @@ mod router;
 mod tests;
 
 use futures::Future;
-use game::{toml_to_hashmap, Game};
+use game::{toml_to_hashmap, unpack_toml, Config, Game, ServerConfig};
 use hyper::Server;
 
 use std::collections::HashMap;

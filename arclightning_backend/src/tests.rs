@@ -1,50 +1,17 @@
 #![cfg(test)]
 use super::*;
-
-#[test]
-fn test_json_serialization() {
-    // Read in a specific file
-    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
-
-    // serialize as json
-    let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
-    let json_object_melty_blood = serde_json::to_string(&games.get("melty_blood")).unwrap();
-
-    // test cases separately to get around the nondeterministic order for hashmap
-    let test_json_touhou = "{\"name\":\"Touhou\",\
-                            \"description\":\"bullet hell with waifus\",\
-                            \"genres\":[\"bullet hell\",\"anime\"],\
-                            \"thumbnail_path\":\"path/to/touhou/thumbnail\"}";
-    let test_json_mb = "{\"name\":\"Melty Blood\",\
-                        \"description\":\"fighter with waifus\",\
-                        \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                        \"thumbnail_path\":\"path/to/melty_blood/thumbnail\"}";
-
-    assert_eq!(json_object_touhou, test_json_touhou);
-    assert_eq!(json_object_melty_blood, test_json_mb);
-}
-
-#[test]
-fn test_games_serialization() {
-    // Read in a specific file
-    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
-
-    let games_clone = games.clone();
-
-    // wrap all the games in a mutex
-    // note that this moves games into the mutex
-    let games_data = Arc::new(Mutex::new(games));
-
-    assert_eq!(games_clone, *games_data.lock().unwrap());
-}
+use std::sync::{Arc, Mutex};
 
 #[test]
 fn test_read_toml() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    println!("{:#?}", config);
+    let games = config.games_config;
+
+    //println!("{:#?}", games);
+    //let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
     let mut test_games: HashMap<String, Game> = HashMap::new();
     test_games.insert(
@@ -71,4 +38,43 @@ fn test_read_toml() {
         },
     );
     assert_eq!(games, test_games);
+}
+
+#[test]
+fn test_json_serialization() {
+    // Read in a specific file
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
+
+    // serialize as json
+    let json_object_touhou = serde_json::to_string(&games.get("game.touhou_123")).unwrap();
+    let json_object_melty_blood = serde_json::to_string(&games.get("game.melty_blood")).unwrap();
+
+    // test cases separately to get around the nondeterministic order for hashmap
+    let test_json_touhou = "{\"name\":\"Touhou\",\
+                            \"description\":\"bullet hell with waifus\",\
+                            \"genres\":[\"bullet hell\",\"anime\"],\
+                            \"thumbnail_path\":\"path/to/touhou/thumbnail\"}";
+    let test_json_mb = "{\"name\":\"Melty Blood\",\
+                        \"description\":\"fighter with waifus\",\
+                        \"genres\":[\"fighter\",\"anime\",\"2d\"],\
+                        \"thumbnail_path\":\"path/to/melty_blood/thumbnail\"}";
+
+    assert_eq!(json_object_touhou, test_json_touhou);
+    assert_eq!(json_object_melty_blood, test_json_mb);
+}
+
+#[test]
+fn test_games_serialization() {
+    // Read in a specific file
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
+
+    let games_clone = games.clone();
+
+    // wrap all the games in a mutex
+    // note that this moves games into the mutex
+    let games_data = Arc::new(Mutex::new(games));
+
+    assert_eq!(games_clone, *games_data.lock().unwrap());
 }
