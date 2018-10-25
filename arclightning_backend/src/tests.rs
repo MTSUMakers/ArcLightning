@@ -12,48 +12,28 @@ fn test_paths() {
 
     use std::fs::read_dir;
     let valid_files = list_files(path).unwrap();
-    //println!("Valid files {:#?}", valid_files);
 
-    let toml_path: PathBuf = [
-        r"C:\\",
-        "Users",
-        "Sam",
-        "Documents",
-        "CSCI_4700",
-        "ArcLightning",
-        "arclightning_backend",
-        "asdf.toml",
-    ]
-        .iter()
-        .collect();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
 
-    //println!("Target file {:#?}", toml_path);
+    println!("Toml filepath: {:?}", toml_filepath);
 
-    assert!(valid_files.contains(&toml_path));
+    // Kind of sloppy for a test, but the previous list_files() takes ownership of path.
+    // So we need to redefine it once more
+    let path = env::current_dir().unwrap();
+    let joined_path = path.join(&toml_filepath);
+
+    println!("Joined toml filepath: {:?}", joined_path);
+
+    assert!(valid_files.contains(&joined_path));
 }
 
 #[test]
 fn test_read_toml() {
     // Read in a specific file
-    //let toml_filepath: PathBuf = ["asdf.toml"].iter().collect();
-    let toml_filepath: PathBuf = [
-        r"C:\\",
-        "Users",
-        "Sam",
-        "Documents",
-        "CSCI_4700",
-        "ArcLightning",
-        "arclightning_backend",
-        "asdf.toml",
-    ]
-        .iter()
-        .collect();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
     let config: Config = unpack_toml(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games_config;
-
-    //println!("{:#?}", games);
-    //let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
 
     let mut test_games: HashMap<String, Game> = HashMap::new();
     test_games.insert(
@@ -85,12 +65,14 @@ fn test_read_toml() {
 #[test]
 fn test_json_serialization() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["test_files", "server_config.toml"].iter().collect();
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    println!("{:#?}", config);
+    let games = config.games_config;
 
     // serialize as json
-    let json_object_touhou = serde_json::to_string(&games.get("game.touhou_123")).unwrap();
-    let json_object_melty_blood = serde_json::to_string(&games.get("game.melty_blood")).unwrap();
+    let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
+    let json_object_melty_blood = serde_json::to_string(&games.get("melty_blood")).unwrap();
 
     // test cases separately to get around the nondeterministic order for hashmap
     let test_json_touhou = "{\"name\":\"Touhou\",\
@@ -109,8 +91,10 @@ fn test_json_serialization() {
 #[test]
 fn test_games_serialization() {
     // Read in a specific file
-    let toml_filepath: PathBuf = ["test_files", "server_config.toml"].iter().collect();
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath).unwrap();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    println!("{:#?}", config);
+    let games = config.games_config;
 
     let games_clone = games.clone();
 

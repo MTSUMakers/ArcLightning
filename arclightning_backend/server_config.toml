@@ -14,8 +14,6 @@ thumbnail_path = "path/to/melty_blood/thumbnail"
 exe_path = "test_files\\melty_blood_game.exe"
 exe_args = ["arg1", "arg2"]
 
-[server_config.static_dir]
-"..\\arclightning_backend"
-
-[server_config.listen_port]
-"3000"
+[server_config]
+static_dir = "..\\arclightning_backend"
+listen_port = 3000
