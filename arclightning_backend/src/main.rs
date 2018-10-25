@@ -15,6 +15,7 @@ mod tests;
 use config::{unpack_toml, Config, Game};
 use futures::Future;
 use hyper::Server;
+use password::*;
 
 use std::collections::HashMap;
 use std::io;

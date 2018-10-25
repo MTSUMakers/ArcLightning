@@ -8,6 +8,7 @@ use std::io::{self, ErrorKind};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 type ResponseFuture = Box<Future<Item = Response<Body>, Error = io::Error> + Send>;
 
@@ -34,6 +35,25 @@ pub struct Router {
 #[derive(Debug, Deserialize, Clone)]
 struct StartGameRequest {
     id: String,
+}
+
+struct AccessKey {
+    access_key: &[u8],
+    access_time: u32,
+}
+
+struct CheckPasswordOutput {
+    success: bool,
+    access_key: &[u8],
+}
+
+impl CheckPasswordOutput {
+    pub fn new(success: bool, access_key: &[u8]) -> Self {
+        CheckPasswordOutput {
+            success: success,
+            access_key: access_key,
+        }
+    }
 }
 
 impl hyper::service::Service for Router {
@@ -162,6 +182,28 @@ impl Router {
                 })
             }).flatten();
         Box::new(response)
+    }
+
+    // Checks header of incoming request
+    // Returns destination dependent on provided key
+    fn check_header(
+        password: String,
+        hash: &[u8],
+        destination: hyper::Uri,
+    ) -> (CheckPasswordOutput, AccessKey, hyper::Uri) {
+        if check_password(password, hash) {
+            (
+                CheckPasswordOutput::new(true, hash),
+                AccessKey::new(hash, SystemTime::new().duration_since(UNIX_EPOCH)),
+                destination,
+            )
+        } else {
+            (
+                CheckPasswordOutput::new(false, vec![0]),
+                AccessKey::new(vec![0], 0),
+                hyper::Uri::from_static("/demonstration.html"),
+            )
+        }
     }
 
     fn serve_static_file(
