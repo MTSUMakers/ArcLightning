@@ -31,9 +31,9 @@ pub struct Game {
 }
 
 pub fn unpack_toml(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
-    let mut games_toml = String::new();
-    File::open(&toml_filepath)?.read_to_string(&mut games_toml)?;
+    let mut config_toml = String::new();
+    File::open(&toml_filepath)?.read_to_string(&mut config_toml)?;
 
     // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
+    toml::from_str(&config_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
 }
