@@ -30,8 +30,7 @@ pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
 pub struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
     static_dir: PathBuf,
-    access_key: Vec<u8>,
-    last_successful_access_time: u64,
+    access_key: Option<AccessKey>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -44,15 +43,13 @@ struct PasswordRequest {
 }
 
 
-/*
- * TODO: determine if this chunk of commented code is necessary
 struct AccessKey {
     access_key: Vec<u8>,
     access_time: u64,
 }
 
 impl AccessKey {
-    pub fn new(access_key: Vec<u8>, access_time: u64) -> Self {
+    pub fn new(access_key: String, access_time: u64) -> Self {
         AccessKey {
             access_key: access_key.clone(),
             access_time: access_time,
@@ -60,9 +57,11 @@ impl AccessKey {
     }
 }
 
+/*
+ * TODO: determine if this chunk of commented code is necessary
 struct CheckPasswordOutput {
     success: bool,
-    access_key: Vec<u8>,
+    access_key: Option<String>,
 }
 
 impl CheckPasswordOutput {
