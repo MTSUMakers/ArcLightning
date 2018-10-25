@@ -27,8 +27,8 @@ fn main() -> Result<(), io::Error> {
     // Unpack config
     let config: Config = unpack_toml(&toml_filepath)?;
     let games: HashMap<String, Game> = config.games;
-    let listen_port: u16 = config.server_config.listen_port;
-    let static_dir: PathBuf = config.server_config.static_dir;
+    let listen_port: u16 = config.listen_port;
+    let static_dir: PathBuf = config.static_dir;
 
     println!("Using assets directory: {:?}", static_dir);
 

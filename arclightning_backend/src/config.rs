@@ -6,14 +6,9 @@ use toml;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Config {
-    pub games: HashMap<String, Game>,
-    pub server_config: ServerConfig,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-pub struct ServerConfig {
     pub listen_port: u16,
     pub static_dir: PathBuf,
+    pub games: HashMap<String, Game>,
 }
 
 // using PartialEq for unit tests
