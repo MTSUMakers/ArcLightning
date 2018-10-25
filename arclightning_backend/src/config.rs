@@ -37,12 +37,3 @@ pub fn unpack_toml(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
     // error casting for homogeneous errors
     toml::from_str(&games_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
 }
-
-pub fn toml_to_hashmap(toml_filepath: &PathBuf) -> Result<HashMap<String, Game>, io::Error> {
-    let mut games_toml = String::new();
-    let mut file = File::open(&toml_filepath)?;
-    file.read_to_string(&mut games_toml)?;
-
-    // error casting for homogeneous errors
-    toml::from_str(&games_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
-}

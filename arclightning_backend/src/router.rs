@@ -28,6 +28,7 @@ pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
 #[derive(Debug, Clone)]
 pub struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
+    static_dir: PathBuf,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -55,14 +56,16 @@ impl hyper::service::NewService for Router {
     fn new_service(&self) -> Self::Future {
         Box::new(future::ok(Self {
             games_list: self.games_list.clone(),
+            static_dir: self.static_dir.clone(),
         }))
     }
 }
 
 impl Router {
-    pub fn new(games_list: HashMap<String, Game>) -> Self {
+    pub fn new(games_list: HashMap<String, Game>, static_dir: PathBuf) -> Self {
         Router {
             games_list: Arc::new(Mutex::new(games_list)),
+            static_dir: static_dir,
         }
     }
 
@@ -202,7 +205,7 @@ impl Router {
     }
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
-        let root_dir: PathBuf = ["..", "arclightning_frontend"].iter().collect();
+        let root_dir: PathBuf = self.static_dir.clone();
         let valid_files: Vec<PathBuf> = match list_files(root_dir.clone()) {
             Ok(v) => v,
             Err(_err) => vec![PathBuf::from("404.html")],

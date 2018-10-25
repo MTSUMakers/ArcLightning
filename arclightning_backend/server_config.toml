@@ -15,5 +15,5 @@ exe_path = "test_files\\melty_blood_game.exe"
 exe_args = ["arg1", "arg2"]
 
 [server_config]
-static_dir = "..\\arclightning_backend"
+static_dir = "..\\arclightning_frontend"
 listen_port = 3000

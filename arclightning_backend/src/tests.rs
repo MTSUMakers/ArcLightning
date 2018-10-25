@@ -10,7 +10,6 @@ fn test_paths() {
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
 
-    use std::fs::read_dir;
     let valid_files = list_files(path).unwrap();
 
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
