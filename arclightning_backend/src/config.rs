@@ -6,7 +6,7 @@ use toml;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Config {
-    pub games_config: HashMap<String, Game>,
+    pub games: HashMap<String, Game>,
     pub server_config: ServerConfig,
 }
 
