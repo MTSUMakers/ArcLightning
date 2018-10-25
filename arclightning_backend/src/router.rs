@@ -225,6 +225,9 @@ impl Router {
         }
     }
 
+    // TODO: figure out how to merge this function with the above
+    // TODO: how to correctly handle salting?
+    // TODO: validate b2sum methods to be able to store salted hash in config
     fn check_password(&self, request: Request<Body>) -> ResponseFuture {
         let response = request
             .into_body()
