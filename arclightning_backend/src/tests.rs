@@ -103,3 +103,20 @@ fn test_games_serialization() {
 
     assert_eq!(games_clone, *games_data.lock().unwrap());
 }
+
+#[test]
+fn test_check_password() {
+    // this still fails...?
+    let password: String = "this_IS my_P455W0RD!%".to_owned();
+    let hashed_password: Vec<u8> = "03ef4992f505d6ef85ae31350588\
+                                    aeaa8a980827fc9f732be6231a19\
+                                    b5ec61af4075ae89c58ddafc3d77\
+                                    12d7e98d5bebfee50817bfa5d78c\
+                                    eb2568864312f464"
+        .to_owned()
+        .into_bytes();
+
+    println!("{:?}", hashed_password);
+
+    assert!(password::check_password(password, &hashed_password));
+}

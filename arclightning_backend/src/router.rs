@@ -36,19 +36,32 @@ pub struct Router {
 struct StartGameRequest {
     id: String,
 }
+#[derive(Debug, Deserialize, Clone)]
+struct PasswordRequest {
+    password: String,
+}
 
 struct AccessKey {
-    access_key: &[u8],
-    access_time: u32,
+    access_key: Vec<u8>,
+    access_time: u64,
+}
+
+impl AccessKey {
+    pub fn new(access_key: Vec<u8>, access_time: u64) -> Self {
+        AccessKey {
+            access_key: access_key.clone(),
+            access_time: access_time,
+        }
+    }
 }
 
 struct CheckPasswordOutput {
     success: bool,
-    access_key: &[u8],
+    access_key: Vec<u8>,
 }
 
 impl CheckPasswordOutput {
-    pub fn new(success: bool, access_key: &[u8]) -> Self {
+    pub fn new(success: bool, access_key: Vec<u8>) -> Self {
         CheckPasswordOutput {
             success: success,
             access_key: access_key,
@@ -188,13 +201,19 @@ impl Router {
     // Returns destination dependent on provided key
     fn check_header(
         password: String,
-        hash: &[u8],
+        hash: Vec<u8>,
         destination: hyper::Uri,
     ) -> (CheckPasswordOutput, AccessKey, hyper::Uri) {
-        if check_password(password, hash) {
+        if check_password(password, &hash) {
             (
-                CheckPasswordOutput::new(true, hash),
-                AccessKey::new(hash, SystemTime::new().duration_since(UNIX_EPOCH)),
+                CheckPasswordOutput::new(true, hash.clone()),
+                AccessKey::new(
+                    hash,
+                    SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .expect("Time went backwards")
+                        .as_secs(),
+                ),
                 destination,
             )
         } else {
@@ -204,6 +223,35 @@ impl Router {
                 hyper::Uri::from_static("/demonstration.html"),
             )
         }
+    }
+
+    fn check_password(&self, request: Request<Body>) -> ResponseFuture {
+        let response = request
+            .into_body()
+            .concat2()
+            .map_err(|err| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to parse byte string: {}", err),
+                )
+            }).and_then(|body| {
+                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
+            }).and_then(move |request_body: PasswordRequest| {
+                let password = &request_body.password.clone();
+
+                println!("{:?}", password);
+
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .body(Body::from("Password received".to_owned()))
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
+            });
+        Box::new(response)
     }
 
     fn serve_static_file(
@@ -256,6 +304,7 @@ impl Router {
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request),
+            (&Method::POST, "/api/v1/check_password") => self.check_password(request),
             (&Method::GET, _) => self.serve_static_file(root_dir, valid_files, request),
             _ => self.invalid_endpoint(),
         }
