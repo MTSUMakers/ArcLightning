@@ -30,6 +30,8 @@ pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
 pub struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
     static_dir: PathBuf,
+    access_key: Vec<u8>,
+    last_successful_access_time: u64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -41,6 +43,9 @@ struct PasswordRequest {
     password: String,
 }
 
+
+/*
+ * TODO: determine if this chunk of commented code is necessary
 struct AccessKey {
     access_key: Vec<u8>,
     access_time: u64,
@@ -68,6 +73,7 @@ impl CheckPasswordOutput {
         }
     }
 }
+*/
 
 impl hyper::service::Service for Router {
     type ReqBody = Body;
@@ -90,6 +96,8 @@ impl hyper::service::NewService for Router {
         Box::new(future::ok(Self {
             games_list: self.games_list.clone(),
             static_dir: self.static_dir.clone(),
+            access_key: self.access_key,
+            last_successful_access_time: self.last_successful_access_time,
         }))
     }
 }
@@ -99,6 +107,8 @@ impl Router {
         Router {
             games_list: Arc::new(Mutex::new(games_list)),
             static_dir: static_dir,
+            access_key: Vec::new(),
+            last_successful_access_time: 0,
         }
     }
 
@@ -200,29 +210,64 @@ impl Router {
     // Checks header of incoming request
     // Returns destination dependent on provided key
     fn check_header(
-        password: String,
-        hash: Vec<u8>,
-        destination: hyper::Uri,
-    ) -> (CheckPasswordOutput, AccessKey, hyper::Uri) {
-        if check_password(password, &hash) {
-            (
-                CheckPasswordOutput::new(true, hash.clone()),
-                AccessKey::new(
-                    hash,
-                    SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .expect("Time went backwards")
-                        .as_secs(),
-                ),
-                destination,
-            )
-        } else {
-            (
-                CheckPasswordOutput::new(false, vec![0]),
-                AccessKey::new(vec![0], 0),
-                hyper::Uri::from_static("/demonstration.html"),
-            )
-        }
+        &self,
+        root: PathBuf,
+        request: Request<Body>,
+        salted_hash: Vec<u8>,
+    ) -> ResponseFuture {
+        request
+            .into_body()
+            .concat2()
+            .map_err(|err| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to parse byte string: {}", err),
+                )
+            }).and_then(|body| {
+                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
+            }).and_then(move |request_body: PasswordRequest| {
+                let password = request_body.password.clone();
+
+                if check_password(password, &salted_hash) {
+                    self.access_key = salted_hash;
+                    self.last_successful_access_time = 
+                        SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .expect("Time went backwards")
+                            .as_secs();
+
+                    /*
+                    CheckPasswordOutput::new(true, salted_hash.clone()),
+                    AccessKey::new(
+                        salted_hash,
+                        SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .expect("Time went backwards")
+                            .as_secs(),
+                    ),
+                    */
+                } else {
+                    /*
+                    CheckPasswordOutput::new(false, vec![0]),
+                    AccessKey::new(vec![0], 0),
+                    */
+                    *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
+                }
+            });
+
+        // resolve request and create response
+        let response = hyper_staticfile::resolve(&root, &request)
+            .map(move |result| {
+                hyper_staticfile::ResponseBuilder::new()
+                    .build(&request, result)
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
+            }).and_then(|response| future::result(response));
+        Box::new(response)
     }
 
     // TODO: figure out how to merge this function with the above
@@ -243,6 +288,8 @@ impl Router {
                 let password = &request_body.password.clone();
 
                 println!("{:?}", password);
+
+                // if password is correct, update self.{password_data}
 
                 Response::builder()
                     .status(StatusCode::OK)
@@ -299,6 +346,7 @@ impl Router {
 
     fn route(&self, request: Request<Body>) -> ResponseFuture {
         let root_dir: PathBuf = self.static_dir.clone();
+        let salted_hash: Vec<u8> = Vec::new();
         let valid_files: Vec<PathBuf> = match list_files(root_dir.clone()) {
             Ok(v) => v,
             Err(_err) => vec![PathBuf::from("404.html")],
