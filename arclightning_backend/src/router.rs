@@ -43,8 +43,9 @@ struct PasswordRequest {
 }
 
 
+#[derive(Debug, Clone)]
 struct AccessKey {
-    access_key: Vec<u8>,
+    access_key: String,
     access_time: u64,
 }
 
@@ -96,7 +97,6 @@ impl hyper::service::NewService for Router {
             games_list: self.games_list.clone(),
             static_dir: self.static_dir.clone(),
             access_key: self.access_key,
-            last_successful_access_time: self.last_successful_access_time,
         }))
     }
 }
@@ -106,8 +106,7 @@ impl Router {
         Router {
             games_list: Arc::new(Mutex::new(games_list)),
             static_dir: static_dir,
-            access_key: Vec::new(),
-            last_successful_access_time: 0,
+            access_key: AccessKey::new(),
         }
     }
 
@@ -228,12 +227,11 @@ impl Router {
                 let password = request_body.password.clone();
 
                 if check_password(password, &salted_hash) {
-                    self.access_key = salted_hash;
-                    self.last_successful_access_time = 
+                    self.access_key = AccessKey::new(salted_hash,
                         SystemTime::now()
                             .duration_since(UNIX_EPOCH)
                             .expect("Time went backwards")
-                            .as_secs();
+                            .as_secs());
 
                     /*
                     CheckPasswordOutput::new(true, salted_hash.clone()),
