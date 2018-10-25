@@ -151,21 +151,18 @@ fn list_files(dir: PathBuf) -> Result<Vec<PathBuf>, io::Error>{
     
     if dir.is_dir(){
         
-        let  paths: Vec<PathBuf> = fs::read_dir(dir).unwrap()
-        .map(|entry| entry.unwrap().path()).collect();
-
-    
-
-        for path in paths{
-            if path.is_dir(){
-                list_files(path);
-            }
-        }
+        let  paths: Vec<PathBuf> = fs::read_dir(dir)?.flatten()
+        .map(|entry| entry.path()).flat_map(list_files(&entry)).flatten().collect();
+        Ok(paths)
 
         
+    }else{
+        let paths: Vec<PathBuf> ;
+        paths.push(dir);
+        Ok(paths)
     }
         
-    Ok(paths)
+    
         
 
  }
