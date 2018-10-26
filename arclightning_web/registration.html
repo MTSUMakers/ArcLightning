@@ -1,3 +1,5 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <!doctype html>
 <html>
 
@@ -18,24 +20,36 @@
 
         .formattedText {
             font-family: 'Do Hyeon', sans-serif;
-            font-size: 64px;
+            font-size: 56px;
         }
     </style>
 </head>
 
 <body>
-    <div class="row" style="width:100%; height:100vh;">
-        <div id="register" class="col-md-6 col-md-offset-3" style="height:60vh; top: 20%;">
+
+<nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="../arclightning_frontend/images/logo.png" style="height: 250%;" alt="">
+  </a>
+	<ul class="nav nav-tabs navbar-right">
+		<li role="presentation"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="login.html">login</a></li>
+		<li role="presentation" class="active" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="#">new account</a></li>
+	</ul>
+
+</nav> 
+
+    <div class="row" style="width:100vw; height:100vh; padding: 0; margin: 0;">
+        <div id="register" class="col-md-6 col-md-offset-3 col-xs-12" style="height:60vh; top: 20%;">
 
             <form id="registerForm" class="formattedText" v-on:submit="register()">
                 <input type="text" placeholder="username" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"
-                    v-model="username" required /> <br><br>
-                <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black;"
-                    v-model="pw" required /><br><br>
-                <input type="password" placeholder="confirm password" id="passwordConfirm" style="width: 100%; border:none; border-bottom: 2px solid black;"
-                    v-model="pwCheck" required /><br><br>
+                    v-model="username" required /> <br>
+                <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black; bottom: 3px;"
+                    v-model="pw" required /><br>
+                <input type="password" placeholder="confirm password" id="passwordConfirm" style="width: 100%; border:none; border-bottom: 2px solid black; font-size: 44px;"
+                    v-model="pwCheck" required /><br>
             </form>
-            <button form="registerForm" class="formattedText" style="margin: 10px 0; width: 100%;">submit</button>
+            <button form="registerForm" class="formattedText" style="margin: 10px 0; width: 100%; line-height: 1.0;">create account</button>
         </div>
     </div>
 </body>
