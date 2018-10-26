@@ -20,7 +20,7 @@
 
         .formattedText {
             font-family: 'Do Hyeon', sans-serif;
-            font-size: 64px;
+            font-size: 56px;
         }
     </style>
 </head>
@@ -32,40 +32,36 @@
     <img src="../arclightning_frontend/images/logo.png" style="height: 250%;" alt="">
   </a>
 	<ul class="nav nav-tabs navbar-right">
-		<li role="presentation" class="active" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="#">login</a></li>
-		<li role="presentation"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="registration.html">new account</a></li>
+		<li role="presentation" class="active"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="#">login</a></li>
+		<li role="presentation" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="registration.html">new account</a></li>
 	</ul>
 
 </nav> 
-<!--<nav class="navbar navbar-light bg-light">
-  <a class="navbar-brand" href="#">
-    <img src="../arclightning_frontend/images/logo.png"  style="height: 250%; position:absolute; margin: auto; text-align:center; left:0; top: 0;" alt="">
-  </a>
-</nav> -->
- 
-    <div class="row" style="width:100vw; height:100vh; padding:0; margin:0;">
-        <div class="col-md-6 col-md-offset-3 col-xs-12" style="height:60vh; top: 20%;">
 
-            <form id="login" class="formattedText" v-on:submit="login()">
+    <div class="row" style="width:100vw; height:100vh; padding: 0; margin: 0;">
+        <div id="login" class="col-md-6 col-md-offset-3 col-xs-12" style="height:60vh; top: 20%;">
+
+            <form id="loginForm" class="formattedText" v-on:submit="login()">
                 <input type="text" placeholder="username" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"
-                    v-model="username" required /> <br><br>
-                <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black;"
-                    v-model="pw" required />
+                    v-model="username" required /> <br>
+                <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black; bottom: 3px;"
+                    v-model="pw" required /><br>
             </form>
-            <button form="login" class="formattedText" style="margin: 10px 0; width: 100%;">log in</button>
+            <button form="loginForm" class="formattedText" style="margin: 10px 0; width: 100%; line-height: 1.0;">log in</button>
         </div>
     </div>
 </body>
 <script>
     new Vue({
         el: '#login',
-        props: ['username', 'pw'],
+        props: ['username', 'pw',],
         methods: {
             login: function () {
-		    alert("You're logged in!")
-                    axios.post('http://httpbin.net/post', JSON.stringify({ username: this.username, password: this.password }))
+                    axios.post('http://hostname/api/v1/register', JSON.stringify({ username: this.username, password: this.password }))
+			//should this redirect to settings page probably?
+                    alert("You're logged in!")
+                }
             }
-        }
     })
 
 </script>
