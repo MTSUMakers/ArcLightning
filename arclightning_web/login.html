@@ -57,7 +57,7 @@
         props: ['username', 'pw',],
         methods: {
             login: function () {
-                    axios.post('http://hostname/api/v1/register', JSON.stringify({ username: this.username, password: this.password }))
+                    axios.post('http://hostname/api/v1/signin', JSON.stringify({ username: this.username, password: this.password }))
 			//should this redirect to settings page probably?
                     alert("You're logged in!")
                 }

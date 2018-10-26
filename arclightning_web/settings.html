@@ -76,8 +76,8 @@
                     alert('Settings changed successfully!')
             },
 	   getSettings: function(){
-			//until endpoint set up, just getting random		
-		   axios.get('hostname/api/v1/check_settings')
+		//when endpoint is set up, this should fill in results and from there I should be able to populate the page with the response data   
+		axios.get('hostname/api/v1/check_settings')
 			.then(response=> {this.results = response.data.results})
 		}
 
