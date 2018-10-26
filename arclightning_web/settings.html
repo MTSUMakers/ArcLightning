@@ -32,7 +32,6 @@
   <a class="navbar-brand" href="#">
     <img src="../arclightning_frontend/images/logo.png" style="height: 250%;" alt="">
   </a>
-<!-- right now this does not look really that good and i really am unsure of what the navbar needs to include. If user is accessing the settings, they must be logged in already, so I just included a log out option. What else will user want to do other than change settings? -->
 	<ul class="nav nav-tabs navbar-right">
 		<li role="presentation" class="active" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="#">settings</a></li>
 		<li role="presentation"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="login.html">log out</a></li>
@@ -43,7 +42,7 @@
         <div id="settings" class="col-xs-12 col-lg-8 col-lg-offset-2" style="height:100vh; width: 100%;">
 
             <form id="settingForm" class="formattedText" v-on:submit="submitSettings()">
-               <br> <input type="text" id="name" style=" top: 10%; text-align:center;width: 100%; border:none; border-bottom: 2px solid black;" v-model="name" v-bind:style="{color: profile_fgcolor, 'background-color': profile_bgcolor}"required /><br>
+               <br> <input type="text" maxlength="200" id="name" style=" top: 10%; text-align:center;width: 100%; border:none; border-bottom: 2px solid black;" v-model="name" v-bind:style="{color: profile_fgcolor, 'background-color': profile_bgcolor}"required /><br>
 
 		<h1 class="formattedText centerItem" >Name color:</h1>
                 <input class="centerItem" type="color" style="height: 50px; width:80%;" id="profile_fgcolor"  value="#333999" v-model="profile_fgcolor"/>
