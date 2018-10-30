@@ -225,7 +225,7 @@ impl Router {
                 let outgoing_json: String =
                     if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
                         // TODO: this will be some string of 64 bytes encoded as hex
-                        let random_cookie: String = String::new();
+                        let session_token: String = String::new();
 
                         let mut guard = access_key.lock().map_err(|err| {
                             io::Error::new(
@@ -235,7 +235,7 @@ impl Router {
                         })?;
 
                         *guard = Some(AccessKey::new(
-                            random_cookie.clone(),
+                            session_token.clone(),
                             SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .expect("Time went backwards")
@@ -245,7 +245,7 @@ impl Router {
                         format!(
                             "{}{}{}",
                             "{'success':true,'access_key':",
-                            random_cookie.clone(),
+                            session_token.clone(),
                             "}"
                         ).to_owned()
                     } else {
@@ -288,13 +288,13 @@ impl Router {
                 let salted_hash: String = String::new();
 
                 // TODO: this will be some string of 64 bytes encoded as hex
-                let random_cookie: String = String::new();
+                let session_token: String = String::new();
 
                 println!("{:?}", password);
 
                 if check_password(password, salted_hash.as_str().as_bytes()) {
                     self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
-                        random_cookie,
+                        session_token,
                         SystemTime::now()
                             .duration_since(UNIX_EPOCH)
                             .expect("Time went backwards")
