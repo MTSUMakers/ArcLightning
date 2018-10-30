@@ -67,56 +67,127 @@ impl WebRouter {
 
     fn register(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: parse body into username and password
+        /*
         let response = request.body().concat2().map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("Failed to parse byte string: {}", err),
             )
         });
+        */
+
+        // TODO: wip
+        let response = future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("TODO".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing TODO: {}", err),
+                    )
+                }),
+        );
         Box::new(response)
     }
 
     fn signin(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: parse body into username and password
+        /*
         let response = request.body().concat2().map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("Failed to parse byte string: {}", err),
             )
         });
+        */
+        // TODO: wip
+        let response = future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("TODO".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing TODO: {}", err),
+                    )
+                }),
+        );
         Box::new(response)
     }
 
     fn check_in(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: parse body into key
+        /*
         let response = request.body().concat2().map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("Failed to parse byte string: {}", err),
             )
         });
+        */
+        // TODO: wip
+        let response = future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("TODO".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing TODO: {}", err),
+                    )
+                }),
+        );
         Box::new(response)
     }
 
     fn check_out(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: parse body into key
+        /*
         let response = request.body().concat2().map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("Failed to parse byte string: {}", err),
             )
         });
+        */
+        // TODO: wip
+        let response = future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("TODO".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing TODO: {}", err),
+                    )
+                }),
+        );
         Box::new(response)
     }
 
     fn check_settings(&self, request: Request<Body>) -> ResponseFuture {
         // TODO: parse body into key
+        /*
         let response = request.body().concat2().map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("Failed to parse byte string: {}", err),
             )
         });
+        */
+        // TODO: wip
+        let response = future::result(
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(Body::from("TODO".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing TODO: {}", err),
+                    )
+                }),
+        );
         Box::new(response)
     }
 

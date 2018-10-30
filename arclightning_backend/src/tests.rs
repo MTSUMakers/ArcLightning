@@ -32,7 +32,7 @@ fn test_read_toml() {
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
     let config: Config = unpack_toml(&toml_filepath).unwrap();
     println!("{:#?}", config);
-    let games = config.games_config;
+    let games = config.games;
 
     let mut test_games: HashMap<String, Game> = HashMap::new();
     test_games.insert(
@@ -67,7 +67,7 @@ fn test_json_serialization() {
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
     let config: Config = unpack_toml(&toml_filepath).unwrap();
     println!("{:#?}", config);
-    let games = config.games_config;
+    let games = config.games;
 
     // serialize as json
     let json_object_touhou = serde_json::to_string(&games.get("touhou_123")).unwrap();
@@ -93,7 +93,7 @@ fn test_games_serialization() {
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
     let config: Config = unpack_toml(&toml_filepath).unwrap();
     println!("{:#?}", config);
-    let games = config.games_config;
+    let games = config.games;
 
     let games_clone = games.clone();
 

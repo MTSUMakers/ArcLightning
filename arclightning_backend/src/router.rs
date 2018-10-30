@@ -42,7 +42,6 @@ struct PasswordRequest {
     password: String,
 }
 
-
 #[derive(Debug, Clone)]
 struct AccessKey {
     access_key: String,
@@ -227,13 +226,15 @@ impl Router {
                 let password = request_body.password.clone();
 
                 if check_password(password, &salted_hash) {
-                    self.access_key = AccessKey::new(salted_hash,
+                    self.access_key = AccessKey::new(
+                        salted_hash,
                         SystemTime::now()
                             .duration_since(UNIX_EPOCH)
                             .expect("Time went backwards")
-                            .as_secs());
+                            .as_secs(),
+                    );
 
-                    /*
+                /*
                     CheckPasswordOutput::new(true, salted_hash.clone()),
                     AccessKey::new(
                         salted_hash,
