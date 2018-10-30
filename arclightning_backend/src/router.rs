@@ -30,7 +30,7 @@ pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
 pub struct Router {
     games_list: Arc<Mutex<HashMap<String, Game>>>,
     static_dir: PathBuf,
-    access_key: Option<AccessKey>,
+    access_key: Option<Arc<Mutex<AccessKey>>>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -102,10 +102,10 @@ impl hyper::service::NewService for Router {
 }
 
 impl Router {
-    pub fn new(games_list: HashMap<String, Game>, static_dir: PathBuf) -> Self {
+    pub fn new(config: Config) -> Self {
         Router {
-            games_list: Arc::new(Mutex::new(games_list)),
-            static_dir: static_dir,
+            games_list: Arc::new(Mutex::new(config.games_list)),
+            static_dir: config.static_dir,
             access_key: AccessKey::new(),
         }
     }
