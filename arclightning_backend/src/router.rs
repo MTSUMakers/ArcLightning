@@ -250,7 +250,7 @@ impl Router {
                             r#""}"#
                         ).to_owned()
                     } else {
-                        "{'success':false}".to_owned()
+                        r#"{"success":false}"#.to_owned()
                     };
 
                 // TODO: talk to steven about using cookies instead of header to handle
