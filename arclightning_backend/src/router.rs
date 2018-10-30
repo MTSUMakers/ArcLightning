@@ -242,11 +242,12 @@ impl Router {
                                 .as_secs(),
                         ));
 
+                        // TODO: make sure the strings are handled properly here
                         format!(
                             "{}{}{}",
-                            "{'success':true,'access_key':",
+                            r#"{"success":true,"access_key":""#,
                             session_token.clone(),
-                            "}"
+                            r#""}"#
                         ).to_owned()
                     } else {
                         "{'success':false}".to_owned()
