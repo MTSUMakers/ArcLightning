@@ -1,7 +1,7 @@
 static_dir = "..\\arclightning_frontend"
 listen_port = 3000
 
-[games_config.touhou_123]
+[games.touhou_123]
 name = "Touhou"
 description = "bullet hell with waifus"
 genres = ["bullet hell", "anime"]
@@ -9,7 +9,7 @@ thumbnail_path = "path/to/touhou/thumbnail"
 exe_path = "test_files\\touhou_game.exe"
 exe_args = ["arg1", "arg2"]
 
-[games_config.melty_blood]
+[games.melty_blood]
 name = "Melty Blood"
 description = "fighter with waifus"
 genres = ["fighter", "anime", "2d"]
