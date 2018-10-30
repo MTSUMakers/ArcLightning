@@ -204,15 +204,15 @@ impl Router {
         Box::new(response)
     }
 
-    // Checks header of incoming request
-    // Returns destination dependent on provided key
-    fn check_header(
+    // Checks password at demo screen
+    // If correct, returns serialized access key in the ResponseFuture
+    fn check_password(
         &self,
         root: PathBuf,
         request: Request<Body>,
         salted_hash: String,
     ) -> ResponseFuture {
-        request
+        let response = request
             .into_body()
             .concat2()
             .map_err(|err| {
@@ -225,32 +225,36 @@ impl Router {
             }).and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
 
-                if check_password(password, salted_hash.as_str().as_bytes()) {
-                    self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
-                        salted_hash,
-                        SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .expect("Time went backwards")
-                            .as_secs(),
-                    ))));
+                // TODO: this should be read from config file
+                let salted_hash: String = String::new();
 
-                /*
-                    CheckPasswordOutput::new(true, salted_hash.clone()),
-                    AccessKey::new(
-                        salted_hash,
-                        SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .expect("Time went backwards")
-                            .as_secs(),
-                    ),
-                    */
-                } else {
-                    /*
-                    CheckPasswordOutput::new(false, vec![0]),
-                    AccessKey::new(vec![0], 0),
-                    */
-                    *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
-                }
+                // TODO: this will be some string of 64 bytes encoded as hex
+                let random_cookie: String = String::new();
+
+                let outgoing_json =
+                    if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
+                        self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
+                            random_cookie,
+                            SystemTime::now()
+                                .duration_since(UNIX_EPOCH)
+                                .expect("Time went backwards")
+                                .as_secs(),
+                        ))));
+                        "{'success':true,'access_key':" + random_cookie + "}"
+                    } else {
+                        *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
+                        "{'success':false}"
+                    };
+
+                Response::builder()
+                    .status(StatusCode::OK)
+                    .body(Body::from(serde_json::from_str(outgoing_json)))
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
             });
 
         // resolve request and create response
@@ -268,6 +272,7 @@ impl Router {
         Box::new(response)
     }
 
+    /*
     // TODO: figure out how to merge this function with the above
     // TODO: how to correctly handle salting?
     // TODO: validate b2sum methods to be able to store salted hash in config
@@ -285,22 +290,39 @@ impl Router {
             }).and_then(move |request_body: PasswordRequest| {
                 let password = &request_body.password.clone();
 
+                // TODO: this should be read from config file
+                let salted_hash: String = String::new();
+
+                // TODO: this will be some string of 64 bytes encoded as hex
+                let random_cookie: String = String::new();
+
                 println!("{:?}", password);
 
-                // if password is correct, update self.{password_data}
+                if check_password(password, salted_hash.as_str().as_bytes()) {
+                    self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
+                        random_cookie,
+                        SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .expect("Time went backwards")
+                            .as_secs(),
+                    ))));
 
-                Response::builder()
-                    .status(StatusCode::OK)
-                    .body(Body::from("Password received".to_owned()))
-                    .map_err(|err| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            format!("An error occured when building a response: {}", err),
-                        )
-                    })
+                    // if password is correct, update self.{password_data}
+
+                    Response::builder()
+                        .status(StatusCode::OK)
+                        .body(Body::from("Password received".to_owned()))
+                        .map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("An error occured when building a response: {}", err),
+                            )
+                        })
+                }
             });
         Box::new(response)
     }
+    */
 
     fn serve_static_file(
         &self,
@@ -353,7 +375,7 @@ impl Router {
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request),
-            (&Method::POST, "/api/v1/check_password") => self.check_password(request),
+            //(&Method::POST, "/api/v1/check_password") => self.check_password(request),
             (&Method::GET, _) => self.serve_static_file(root_dir, valid_files, request),
             _ => self.invalid_endpoint(),
         }
