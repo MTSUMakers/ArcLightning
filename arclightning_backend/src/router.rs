@@ -95,7 +95,7 @@ impl hyper::service::NewService for Router {
         Box::new(future::ok(Self {
             games: self.games.clone(),
             static_dir: self.static_dir.clone(),
-            access_key: self.access_key,
+            access_key: self.access_key.clone(),
         }))
     }
 }
@@ -207,7 +207,7 @@ impl Router {
     // Checks password at demo screen
     // If correct, returns serialized access key in the ResponseFuture
     fn check_password(
-        &self,
+        mut self,
         root: PathBuf,
         request: Request<Body>,
         salted_hash: String,
@@ -231,24 +231,26 @@ impl Router {
                 // TODO: this will be some string of 64 bytes encoded as hex
                 let random_cookie: String = String::new();
 
-                let outgoing_json =
+                let outgoing_json: String =
                     if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
                         self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
-                            random_cookie,
+                            random_cookie.clone(),
                             SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .expect("Time went backwards")
                                 .as_secs(),
                         ))));
-                        "{'success':true,'access_key':" + random_cookie + "}"
+                        format!(
+                            "{}{}{}",
+                            "{'success':true,'access_key':", random_cookie.clone(), "}"
+                        ).to_owned()
                     } else {
-                        *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
-                        "{'success':false}"
+                        "{'success':false}".to_owned()
                     };
 
                 Response::builder()
                     .status(StatusCode::OK)
-                    .body(Body::from(serde_json::from_str(outgoing_json)))
+                    .body(Body::from(outgoing_json))
                     .map_err(|err| {
                         io::Error::new(
                             ErrorKind::Other,
@@ -257,18 +259,6 @@ impl Router {
                     })
             });
 
-        // resolve request and create response
-        let response = hyper_staticfile::resolve(&root, &request)
-            .map(move |result| {
-                hyper_staticfile::ResponseBuilder::new()
-                    .build(&request, result)
-                    .map_err(|err| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            format!("An error occured when building a response: {}", err),
-                        )
-                    })
-            }).and_then(|response| future::result(response));
         Box::new(response)
     }
 
