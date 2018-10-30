@@ -27,7 +27,7 @@ fn main() -> Result<(), io::Error> {
 
     // Unpack config
     let config: Config = unpack_toml(&toml_filepath)?;
-    
+
     // Host server
     let addr = ([127, 0, 0, 1], config.listen_port).into();
 
@@ -35,7 +35,6 @@ fn main() -> Result<(), io::Error> {
 
     // put the games data into the router struct
     let router = router::Router::new(config);
-
 
     let server = Server::bind(&addr)
         .serve(router)

@@ -30,7 +30,7 @@ pub fn list_files(path: PathBuf) -> Result<Vec<PathBuf>, io::Error> {
 pub struct Router {
     games: Arc<Mutex<HashMap<String, Game>>>,
     static_dir: PathBuf,
-    access_key: Option<Arc<Mutex<AccessKey>>>,
+    access_key: Arc<Mutex<Option<AccessKey>>>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -105,7 +105,7 @@ impl Router {
         Router {
             games: Arc::new(Mutex::new(config.games)),
             static_dir: config.static_dir,
-            access_key: None,
+            access_key: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -206,12 +206,9 @@ impl Router {
 
     // Checks password at demo screen
     // If correct, returns serialized access key in the ResponseFuture
-    fn check_password(
-        mut self,
-        root: PathBuf,
-        request: Request<Body>,
-        salted_hash: String,
-    ) -> ResponseFuture {
+    fn check_password(&mut self, request: Request<Body>, salted_hash: String) -> ResponseFuture {
+        let access_key = self.access_key.clone();
+
         let response = request
             .into_body()
             .concat2()
@@ -225,24 +222,31 @@ impl Router {
             }).and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
 
-                // TODO: this should be read from config file
-                let salted_hash: String = String::new();
-
-                // TODO: this will be some string of 64 bytes encoded as hex
-                let random_cookie: String = String::new();
-
                 let outgoing_json: String =
                     if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
-                        self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
+                        // TODO: this will be some string of 64 bytes encoded as hex
+                        let random_cookie: String = String::new();
+
+                        let mut guard = access_key.lock().map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("Failed to acquire mutex on games list: {}", err),
+                            )
+                        })?;
+
+                        *guard = Some(AccessKey::new(
                             random_cookie.clone(),
                             SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .expect("Time went backwards")
                                 .as_secs(),
-                        ))));
+                        ));
+
                         format!(
                             "{}{}{}",
-                            "{'success':true,'access_key':", random_cookie.clone(), "}"
+                            "{'success':true,'access_key':",
+                            random_cookie.clone(),
+                            "}"
                         ).to_owned()
                     } else {
                         "{'success':false}".to_owned()
@@ -354,9 +358,9 @@ impl Router {
         Box::new(response)
     }
 
-    fn route(&self, request: Request<Body>) -> ResponseFuture {
+    fn route(&mut self, request: Request<Body>) -> ResponseFuture {
         let root_dir: PathBuf = self.static_dir.clone();
-        let salted_hash: Vec<u8> = Vec::new();
+        let salted_hash: String = String::new();
         let valid_files: Vec<PathBuf> = match list_files(root_dir.clone()) {
             Ok(v) => v,
             Err(_err) => vec![PathBuf::from("404.html")],
@@ -365,7 +369,7 @@ impl Router {
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request),
-            //(&Method::POST, "/api/v1/check_password") => self.check_password(request),
+            (&Method::POST, "/api/v1/check_password") => self.check_password(request, salted_hash),
             (&Method::GET, _) => self.serve_static_file(root_dir, valid_files, request),
             _ => self.invalid_endpoint(),
         }
