@@ -1,5 +1,6 @@
 use super::*;
 use futures::{future, Stream};
+use hyper::header::COOKIE;
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
 use std::collections::HashMap;
@@ -221,12 +222,11 @@ impl Router {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
             }).and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
+                // TODO: this will be some string of 64 bytes encoded as hex
+                let session_token: String = String::new();
 
                 let outgoing_json: String =
                     if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
-                        // TODO: this will be some string of 64 bytes encoded as hex
-                        let session_token: String = String::new();
-
                         let mut guard = access_key.lock().map_err(|err| {
                             io::Error::new(
                                 ErrorKind::Other,
@@ -257,6 +257,7 @@ impl Router {
                 // the cookie stuff. that seems kinda obvious, steven
                 Response::builder()
                     .status(StatusCode::OK)
+                    .header(COOKIE, session_token)
                     .body(Body::from(outgoing_json))
                     .map_err(|err| {
                         io::Error::new(
@@ -268,58 +269,6 @@ impl Router {
 
         Box::new(response)
     }
-
-    /*
-    // TODO: figure out how to merge this function with the above
-    // TODO: how to correctly handle salting?
-    // TODO: validate b2sum methods to be able to store salted hash in config
-    fn check_password(&self, request: Request<Body>) -> ResponseFuture {
-        let response = request
-            .into_body()
-            .concat2()
-            .map_err(|err| {
-                io::Error::new(
-                    ErrorKind::Other,
-                    format!("Failed to parse byte string: {}", err),
-                )
-            }).and_then(|body| {
-                serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).and_then(move |request_body: PasswordRequest| {
-                let password = &request_body.password.clone();
-
-                // TODO: this should be read from config file
-                let salted_hash: String = String::new();
-
-                // TODO: this will be some string of 64 bytes encoded as hex
-                let session_token: String = String::new();
-
-                println!("{:?}", password);
-
-                if check_password(password, salted_hash.as_str().as_bytes()) {
-                    self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
-                        session_token,
-                        SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .expect("Time went backwards")
-                            .as_secs(),
-                    ))));
-
-                    // if password is correct, update self.{password_data}
-
-                    Response::builder()
-                        .status(StatusCode::OK)
-                        .body(Body::from("Password received".to_owned()))
-                        .map_err(|err| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("An error occured when building a response: {}", err),
-                            )
-                        })
-                }
-            });
-        Box::new(response)
-    }
-    */
 
     fn serve_static_file(
         &self,
@@ -345,6 +294,20 @@ impl Router {
         } else if !valid_files.contains(&requested_path) {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
         }
+
+        // verify cookie in header
+        // TURN THIS INTO A FUTURE with FUTURE::RESULT and do some magic plz
+        let cur_cookie: String = request
+            .headers()
+            .get(COOKIE)
+            .map(|header_value| header_value.to_str())?
+            .and_then(|header_value| header_value.to_string());
+
+        /*
+        if cur_cookie != *self.access_key.lock()? {
+            *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
+        }
+        */
 
         // resolve request and create response
         let response = hyper_staticfile::resolve(&root, &request)
