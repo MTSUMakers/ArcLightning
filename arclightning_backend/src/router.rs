@@ -149,18 +149,11 @@ impl Router {
 
 fn list_files(dir: PathBuf) -> Result<Vec<PathBuf>, io::Error>{
     
-    if dir.is_dir(){
-        
-        let  paths: Vec<PathBuf> = fs::read_dir(dir)?.flatten()
+    let result = if dir.is_dir(){
+        result: Vec<PathBuf> = fs::read_dir(dir)?.flatten()
         .map(|entry| entry.path()).flat_map(list_files(&entry)).flatten().collect();
-        Ok(paths)
-
-        
-    }else{
-        let paths: Vec<PathBuf> ;
-        paths.push(dir);
-        Ok(paths)
-    }
+        }else{ vec![dir]. ;}
+    Ok(result)
         
     
         
