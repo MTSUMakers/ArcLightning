@@ -105,7 +105,7 @@ impl Router {
         Router {
             games: Arc::new(Mutex::new(config.games)),
             static_dir: config.static_dir,
-            access_key: AccessKey::new(),
+            access_key: None,
         }
     }
 
@@ -210,7 +210,7 @@ impl Router {
         &self,
         root: PathBuf,
         request: Request<Body>,
-        salted_hash: Vec<u8>,
+        salted_hash: String,
     ) -> ResponseFuture {
         request
             .into_body()
@@ -225,14 +225,14 @@ impl Router {
             }).and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
 
-                if check_password(password, &salted_hash) {
-                    self.access_key = AccessKey::new(
+                if check_password(password, salted_hash.as_str().as_bytes()) {
+                    self.access_key = Some(Arc::new(Mutex::new(AccessKey::new(
                         salted_hash,
                         SystemTime::now()
                             .duration_since(UNIX_EPOCH)
                             .expect("Time went backwards")
                             .as_secs(),
-                    );
+                    ))));
 
                 /*
                     CheckPasswordOutput::new(true, salted_hash.clone()),
