@@ -27,14 +27,12 @@ fn main() -> Result<(), io::Error> {
 
     // Unpack config
     let config: Config = unpack_toml(&toml_filepath)?;
-    let games: HashMap<String, Game> = config.games_config;
     let listen_port: u16 = config.server_config.listen_port;
-    let static_dir: PathBuf = config.server_config.static_dir;
 
     println!("Using assets directory: {:?}", static_dir);
 
     // put the games data into the router struct
-    let router = router::Router::new(games, static_dir);
+    let router = router::Router::new(config);
 
     // Host server
     let addr = ([127, 0, 0, 1], listen_port).into();
