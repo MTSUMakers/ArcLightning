@@ -252,6 +252,8 @@ impl Router {
                         "{'success':false}".to_owned()
                     };
 
+                // TODO: talk to steven about using cookies instead of header to handle
+                // the cookie stuff. that seems kinda obvious, steven
                 Response::builder()
                     .status(StatusCode::OK)
                     .body(Body::from(outgoing_json))
