@@ -263,6 +263,49 @@ impl Router {
         Box::new(response)
     }
 
+    fn check_header(&self, request: Request<Body>) -> Result<bool, io::Error> {
+
+        // TODO: rename these, then handle result in match at the bottom
+        let access_key: String = self
+            .access_key
+            .lock()
+            .map_err(|err| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to acquire mutex on games list: {}", err),
+                )
+            })?
+            .clone()
+            .ok_or_else(|| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to acquire mutex on access key"),
+                )
+            })?
+            .access_key;
+
+        let cookie: String = request
+            .headers()
+            .clone()
+            .get(COOKIE)
+            .ok_or_else(|| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to acquire mutex on games list" ),
+                )
+            })?
+            .to_str()
+            .map_err(|err| {
+                io::Error::new(
+                    ErrorKind::Other,
+                    format!("Failed to acquire mutex on games list: {}", err),
+                )
+            })?
+            .to_string();
+
+        Ok(cookie == access_key)
+    }
+
     fn serve_static_file(
         &self,
         root: PathBuf,
@@ -329,35 +372,21 @@ impl Router {
                         *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
                     }
                     Ok(request)
-                })
+                }),
         ).and_then(move |request| {
             hyper_staticfile::resolve(&root, &request)
-            .map(move |result| {
-                hyper_staticfile::ResponseBuilder::new()
-                    .build(&request, result)
-                    .map_err(|err| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            format!("An error occured when building a response: {}", err),
-                        )
-                    })
-            }).and_then(|response| future::result(response))
+                .map(move |result| {
+                    hyper_staticfile::ResponseBuilder::new()
+                        .build(&request, result)
+                        .map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("An error occured when building a response: {}", err),
+                            )
+                        })
+                }).and_then(|response| future::result(response))
         });
 
-        /*
-        // resolve request and create response
-        let response = hyper_staticfile::resolve(&root, &request)
-            .map(move |result| {
-                hyper_staticfile::ResponseBuilder::new()
-                    .build(&request, result)
-                    .map_err(|err| {
-                        io::Error::new(
-                            ErrorKind::Other,
-                            format!("An error occured when building a response: {}", err),
-                        )
-                    })
-            }).and_then(|response| future::result(response));
-            */
         Box::new(response)
     }
 
@@ -369,6 +398,9 @@ impl Router {
             Err(_err) => vec![PathBuf::from("404.html")],
         };
 
+        // add function to check whether cookie exists
+        // put third argument, function checking cookie and request.headers()
+        // add True/False for all match arms
         match (request.method(), request.uri().path()) {
             (&Method::GET, "/api/v1/list_games") => self.list_games(),
             (&Method::POST, "/api/v1/start_game") => self.start_game(request),
