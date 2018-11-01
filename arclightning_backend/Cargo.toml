@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["sremedios <sam.remedios@gmail.com>"]
 
 [dependencies]
+volume = "0.4.0"
 rand ="0.5"
 blake2-rfc = "0.2"
 futures = "0.1"
