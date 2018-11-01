@@ -108,11 +108,11 @@ fn test_games_serialization() {
 fn test_check_password() {
     // this still fails...?
     let password: String = "this_IS my_P455W0RD!%".to_owned();
-    let hashed_password: Vec<u8> = "03ef4992f505d6ef85ae31350588\
-                                    aeaa8a980827fc9f732be6231a19\
-                                    b5ec61af4075ae89c58ddafc3d77\
-                                    12d7e98d5bebfee50817bfa5d78c\
-                                    eb2568864312f464"
+    let hashed_password: Vec<u8> = "a50f985ce10f2dfbf71e119ae69\
+                                    522754b65e022c558d2ce9160df\
+                                    4113060eb66bf5de6e1ce400c05\
+                                    34a08db6916f4c2751353de29f8\
+                                    4608dd0ebe67e57e12e0"
         .to_owned()
         .into_bytes();
 

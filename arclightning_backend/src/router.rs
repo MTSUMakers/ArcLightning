@@ -1,6 +1,6 @@
 use super::*;
 use futures::{future, Stream};
-use hyper::header::COOKIE;
+use hyper::header::{COOKIE, SET_COOKIE};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
 use std::collections::HashMap;
@@ -241,14 +241,7 @@ impl Router {
                                 .expect("Time went backwards")
                                 .as_secs(),
                         ));
-
-                        // TODO: make sure the strings are handled properly here
-                        format!(
-                            "{}{}{}",
-                            r#"{"success":true,"access_key":""#,
-                            session_token.clone(),
-                            r#""}"#
-                        ).to_owned()
+                        r#"{"success":true}"#.to_owned()
                     } else {
                         r#"{"success":false}"#.to_owned()
                     };
@@ -257,7 +250,7 @@ impl Router {
                 // the cookie stuff. that seems kinda obvious, steven
                 Response::builder()
                     .status(StatusCode::OK)
-                    .header(COOKIE, session_token)
+                    .header(SET_COOKIE, session_token)
                     .body(Body::from(outgoing_json))
                     .map_err(|err| {
                         io::Error::new(
@@ -296,19 +289,62 @@ impl Router {
         }
 
         // verify cookie in header
-        // TURN THIS INTO A FUTURE with FUTURE::RESULT and do some magic plz
-        let cur_cookie: String = request
-            .headers()
-            .get(COOKIE)
-            .map(|header_value| header_value.to_str())?
-            .and_then(|header_value| header_value.to_string());
+        let response = future::result(
+            request
+                .headers()
+                .clone()
+                .get(COOKIE)
+                .map(|header_value| header_value.to_str())
+                .ok_or_else(|| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        "Failed to extract cookie from header".to_owned(),
+                    )
+                }).and_then(|header_value| {
+                    let cookie = header_value
+                        .map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("An error occured when building a response: {}", err),
+                            )
+                        })?.to_string();
+
+                    let access_key: String = self
+                        .access_key
+                        .lock()
+                        .map_err(|err| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("Failed to acquire mutex on games list: {}", err),
+                            )
+                        })?.clone()
+                        .ok_or_else(|| {
+                            io::Error::new(
+                                ErrorKind::Other,
+                                format!("Failed to acquire mutex on access key"),
+                            )
+                        })?.access_key;
+
+                    if cookie != access_key {
+                        *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
+                    }
+                    Ok(request)
+                })
+        ).and_then(move |request| {
+            hyper_staticfile::resolve(&root, &request)
+            .map(move |result| {
+                hyper_staticfile::ResponseBuilder::new()
+                    .build(&request, result)
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
+            }).and_then(|response| future::result(response))
+        });
 
         /*
-        if cur_cookie != *self.access_key.lock()? {
-            *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
-        }
-        */
-
         // resolve request and create response
         let response = hyper_staticfile::resolve(&root, &request)
             .map(move |result| {
@@ -321,6 +357,7 @@ impl Router {
                         )
                     })
             }).and_then(|response| future::result(response));
+            */
         Box::new(response)
     }
 
