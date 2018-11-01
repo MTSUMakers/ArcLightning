@@ -1,6 +1,6 @@
 use super::*;
 use futures::{future, Stream};
-use hyper::header::{COOKIE, SET_COOKIE};
+use hyper::header::{COOKIE, LOCATION, SET_COOKIE};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
 use std::collections::HashMap;
@@ -115,6 +115,21 @@ impl Router {
             Response::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body(Body::from("uwu 404 not foundu hiss".to_owned()))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing 404 error: {}", err),
+                    )
+                }),
+        ))
+    }
+
+    fn redirect_endpoint(&self) -> ResponseFuture {
+        Box::new(future::result(
+            Response::builder()
+                .status(StatusCode::MOVED_PERMANENTLY)
+                .header(LOCATION, "/demonstration.html")
+                .body(Body::empty())
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
@@ -263,8 +278,7 @@ impl Router {
         Box::new(response)
     }
 
-    fn check_header(&self, request: Request<Body>) -> Result<bool, io::Error> {
-
+    fn check_header(&self, request: &Request<Body>) -> Result<bool, io::Error> {
         // TODO: rename these, then handle result in match at the bottom
         let access_key: String = self
             .access_key
@@ -274,15 +288,13 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to acquire mutex on games list: {}", err),
                 )
-            })?
-            .clone()
+            })?.clone()
             .ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
                     format!("Failed to acquire mutex on access key"),
                 )
-            })?
-            .access_key;
+            })?.access_key;
 
         let cookie: String = request
             .headers()
@@ -291,17 +303,15 @@ impl Router {
             .ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list" ),
+                    format!("Failed to acquire mutex on games list"),
                 )
-            })?
-            .to_str()
+            })?.to_str()
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
                     format!("Failed to acquire mutex on games list: {}", err),
                 )
-            })?
-            .to_string();
+            })?.to_string();
 
         Ok(cookie == access_key)
     }
@@ -331,61 +341,17 @@ impl Router {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
         }
 
-        // verify cookie in header
-        let response = future::result(
-            request
-                .headers()
-                .clone()
-                .get(COOKIE)
-                .map(|header_value| header_value.to_str())
-                .ok_or_else(|| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        "Failed to extract cookie from header".to_owned(),
-                    )
-                }).and_then(|header_value| {
-                    let cookie = header_value
-                        .map_err(|err| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("An error occured when building a response: {}", err),
-                            )
-                        })?.to_string();
-
-                    let access_key: String = self
-                        .access_key
-                        .lock()
-                        .map_err(|err| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("Failed to acquire mutex on games list: {}", err),
-                            )
-                        })?.clone()
-                        .ok_or_else(|| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("Failed to acquire mutex on access key"),
-                            )
-                        })?.access_key;
-
-                    if cookie != access_key {
-                        *request.uri_mut() = hyper::Uri::from_static("/demonstration.html");
-                    }
-                    Ok(request)
-                }),
-        ).and_then(move |request| {
-            hyper_staticfile::resolve(&root, &request)
-                .map(move |result| {
-                    hyper_staticfile::ResponseBuilder::new()
-                        .build(&request, result)
-                        .map_err(|err| {
-                            io::Error::new(
-                                ErrorKind::Other,
-                                format!("An error occured when building a response: {}", err),
-                            )
-                        })
-                }).and_then(|response| future::result(response))
-        });
+        let response = hyper_staticfile::resolve(&root, &request)
+            .map(move |result| {
+                hyper_staticfile::ResponseBuilder::new()
+                    .build(&request, result)
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when building a response: {}", err),
+                        )
+                    })
+            }).and_then(|response| future::result(response));
 
         Box::new(response)
     }
@@ -401,11 +367,26 @@ impl Router {
         // add function to check whether cookie exists
         // put third argument, function checking cookie and request.headers()
         // add True/False for all match arms
-        match (request.method(), request.uri().path()) {
-            (&Method::GET, "/api/v1/list_games") => self.list_games(),
-            (&Method::POST, "/api/v1/start_game") => self.start_game(request),
-            (&Method::POST, "/api/v1/check_password") => self.check_password(request, salted_hash),
-            (&Method::GET, _) => self.serve_static_file(root_dir, valid_files, request),
+        //
+        let correct_cookie: bool = self.check_header(&request).unwrap_or(false);
+        match (request.method(), request.uri().path(), correct_cookie) {
+            (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
+            // TODO: make the status code PERMISSION_DENIED
+            (&Method::GET, "/api/v1/list_games", false) => self.list_games(),
+
+            (&Method::POST, "/api/v1/start_game", true) => self.start_game(request),
+            (&Method::POST, "/api/v1/start_game", false) => self.start_game(request),
+
+            (&Method::POST, "/api/v1/check_password", _) => {
+                self.check_password(request, salted_hash)
+            }
+
+            (&Method::GET, "/games.html", false) => {
+                self.redirect_endpoint()
+            }
+
+            (&Method::GET, _, _) => self.serve_static_file(root_dir, valid_files, request),
+
             _ => self.invalid_endpoint(),
         }
     }
