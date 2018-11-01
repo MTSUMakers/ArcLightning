@@ -139,6 +139,20 @@ impl Router {
         ))
     }
 
+    fn api_fail(&self) -> ResponseFuture {
+        Box::new(future::result(
+            Response::builder()
+                .status(StatusCode::FORBIDDEN)
+                .body(Body::from(r#"{"success": false}"#))
+                .map_err(|err| {
+                    io::Error::new(
+                        ErrorKind::Other,
+                        format!("An error occured when constructing 404 error: {}", err),
+                    )
+                }),
+        ))
+    }
+
     fn list_games(&self) -> ResponseFuture {
         let (body, status) = match self
             .games
@@ -371,19 +385,16 @@ impl Router {
         let correct_cookie: bool = self.check_header(&request).unwrap_or(false);
         match (request.method(), request.uri().path(), correct_cookie) {
             (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
-            // TODO: make the status code PERMISSION_DENIED
-            (&Method::GET, "/api/v1/list_games", false) => self.list_games(),
+            (&Method::GET, "/api/v1/list_games", false) => self.api_fail(),
 
             (&Method::POST, "/api/v1/start_game", true) => self.start_game(request),
-            (&Method::POST, "/api/v1/start_game", false) => self.start_game(request),
+            (&Method::POST, "/api/v1/start_game", false) => self.api_fail(),
 
             (&Method::POST, "/api/v1/check_password", _) => {
                 self.check_password(request, salted_hash)
             }
 
-            (&Method::GET, "/games.html", false) => {
-                self.redirect_endpoint()
-            }
+            (&Method::GET, "/games.html", false) => self.redirect_endpoint(),
 
             (&Method::GET, _, _) => self.serve_static_file(root_dir, valid_files, request),
 
