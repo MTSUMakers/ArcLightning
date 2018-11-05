@@ -22,6 +22,7 @@
             font-family: 'Do Hyeon', sans-serif;
             font-size: 42px;
         }
+	
     </style>
 </head>
 
@@ -51,7 +52,7 @@
                 <input class="centerItem" type="color" style="height: 50px; width: 80%;" id="profile_bgcolor" value="#219444" v-model="profile_bgcolor" />
 
                 <p class="formattedText">Volume: </p>
-		<input class="centerItem" type="range" id="volume" style="width: 80%;" min="0.0" max="1.0" step = "0.05" v-model="volume"/>
+		<input class="centerItem" data-slider-id="volumeSlider" type="range" id="volume" style="width: 80%;" min="0.0" max="1.0" step = "0.05" v-model="volume"/>
 
 		</form>
             <button form="settingForm" class="formattedText centerItem" style="margin: 10px 0; width: 100%;">apply</button>
@@ -59,6 +60,8 @@
     </div>
 </body>
 <script>
+
+
     new Vue({
         el: '#settings',
 	data: {

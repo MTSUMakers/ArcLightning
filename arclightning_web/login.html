@@ -47,6 +47,7 @@
                 <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black; bottom: 3px;"
                     v-model="pw" required /><br>
             </form>
+
             <button form="loginForm" class="formattedText" style="margin: 10px 0; width: 100%; line-height: 1.0;">log in</button>
         </div>
     </div>
@@ -57,12 +58,20 @@
         props: ['username', 'pw',],
         methods: {
             login: function () {
-                    axios.post('http://hostname/api/v1/signin', JSON.stringify({ username: this.username, password: this.password }))
-			//should this redirect to settings page probably?
-                    alert("You're logged in!")
-                }
-            }
-    })
+		axios.post('http://hostname/api/v1/signin', JSON.stringify({ username: this.username, password: this.pw }))
+		.then(function (response) {
+			if (response.data == 1) { window.location.href = 'settings.html'}
+			else { alert("Wrong username or password") }
+		}).
+		catch(function (error){
+			alert(error)
+		})
+		
+		}
+	    }
+	})
+
+
 
 </script>
 
