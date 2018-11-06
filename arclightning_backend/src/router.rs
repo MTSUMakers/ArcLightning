@@ -58,23 +58,6 @@ impl AccessKey {
     }
 }
 
-/*
- * TODO: determine if this chunk of commented code is necessary
-struct CheckPasswordOutput {
-    success: bool,
-    access_key: Option<String>,
-}
-
-impl CheckPasswordOutput {
-    pub fn new(success: bool, access_key: Vec<u8>) -> Self {
-        CheckPasswordOutput {
-            success: success,
-            access_key: access_key,
-        }
-    }
-}
-*/
-
 impl hyper::service::Service for Router {
     type ReqBody = Body;
     type ResBody = Body;
@@ -110,18 +93,27 @@ impl Router {
         }
     }
 
-    fn invalid_endpoint(&self) -> ResponseFuture {
-        Box::new(future::result(
-            Response::builder()
-                .status(StatusCode::NOT_FOUND)
-                .body(Body::from("uwu 404 not foundu hiss".to_owned()))
-                .map_err(|err| {
-                    io::Error::new(
-                        ErrorKind::Other,
-                        format!("An error occured when constructing 404 error: {}", err),
-                    )
-                }),
-        ))
+    fn invalid_endpoint(
+        &self,
+        root: PathBuf,
+        mut request: Request<Body>,
+    ) -> ResponseFuture {
+        // In case of an invalid endpoint, serve the static 404.html page
+        *request.uri_mut() = hyper::Uri::from_static("/404.html");
+
+        let response = hyper_staticfile::resolve(&root, &request)
+            .map(move |result| {
+                hyper_staticfile::ResponseBuilder::new()
+                    .build(&request, result)
+                    .map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("An error occured when constructing 404 error: {}", err),
+                        )
+                    })
+            }).and_then(|response| future::result(response));
+
+        Box::new(response)
     }
 
     fn redirect_endpoint(&self) -> ResponseFuture {
@@ -275,8 +267,6 @@ impl Router {
                         r#"{"success":false}"#.to_owned()
                     };
 
-                // TODO: talk to steven about using cookies instead of header to handle
-                // the cookie stuff. that seems kinda obvious, steven
                 Response::builder()
                     .status(StatusCode::OK)
                     .header(SET_COOKIE, session_token)
@@ -383,6 +373,7 @@ impl Router {
         // add True/False for all match arms
         //
         let correct_cookie: bool = self.check_header(&request).unwrap_or(false);
+
         match (request.method(), request.uri().path(), correct_cookie) {
             (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
             (&Method::GET, "/api/v1/list_games", false) => self.api_fail(),
@@ -398,7 +389,7 @@ impl Router {
 
             (&Method::GET, _, _) => self.serve_static_file(root_dir, valid_files, request),
 
-            _ => self.invalid_endpoint(),
+            _ => self.invalid_endpoint(root_dir, request),
         }
     }
 }
