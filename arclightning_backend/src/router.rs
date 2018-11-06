@@ -108,7 +108,8 @@ impl Router {
                     .map_err(|err| {
                         io::Error::new(
                             ErrorKind::Other,
-                            format!("An error occured when constructing 404 error: {}", err),
+                            format!("An error occured when constructing 404 error\
+                                     after invalid endpoint: {}", err),
                         )
                     })
             }).and_then(|response| future::result(response));
@@ -125,7 +126,8 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when constructing 404 error: {}", err),
+                        format!("An error occured when redirecting to\
+                                 /demonstration.html: {}", err),
                     )
                 }),
         ))
@@ -139,7 +141,8 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when constructing 404 error: {}", err),
+                        format!("An error occured when accessing \
+                                 invalid api endpoint: {}", err),
                     )
                 }),
         ))
@@ -290,13 +293,13 @@ impl Router {
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list: {}", err),
+                    format!("Failed to acquire mutex on access key: {}", err),
                 )
             })?.clone()
             .ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on access key"),
+                    format!("Failed to map error on access key lock"),
                 )
             })?.access_key;
 
@@ -307,13 +310,13 @@ impl Router {
             .ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list"),
+                    format!("Failed to acquire cookie from header"),
                 )
             })?.to_str()
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire mutex on games list: {}", err),
+                    format!("Failed to convert cookie to string: {}", err),
                 )
             })?.to_string();
 
