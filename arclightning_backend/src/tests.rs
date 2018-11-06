@@ -120,3 +120,19 @@ fn test_check_password() {
 
     assert!(password::check_password(password, &hashed_password));
 }
+
+#[test]
+fn test_hexdump() {
+    use rand::Rng;
+
+    let mut rng = rand::thread_rng();
+    let mut s = String::new();
+
+    for _ in 0..64 {
+        let v: u8 = rng.gen();
+        s.push_str(&format!("{:02x}", v));
+    }
+
+    println!("{}", s);
+    assert_eq!(hex::decode(s).unwrap().len(), 64);
+}

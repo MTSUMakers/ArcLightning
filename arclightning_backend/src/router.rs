@@ -3,6 +3,7 @@ use futures::{future, Stream};
 use hyper::header::{COOKIE, LOCATION, SET_COOKIE};
 use hyper::rt::Future;
 use hyper::{Body, Error, Method, Request, Response, StatusCode};
+use rand::Rng;
 use std::collections::HashMap;
 use std::fs::read_dir;
 use std::io::{self, ErrorKind};
@@ -246,8 +247,14 @@ impl Router {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
             }).and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
-                // TODO: this will be some string of 64 bytes encoded as hex
-                let session_token: String = String::new();
+
+                // 64 random bytes encoded as hex and stored as a string
+                let mut rng = rand::thread_rng();
+                let mut session_token: String = String::new();
+                for _ in 0..64 {
+                    let v: u8 = rng.gen();
+                    session_token.push_str(&format!("{:02x}", v));
+                }
 
                 let outgoing_json: String =
                     if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
@@ -286,7 +293,6 @@ impl Router {
     }
 
     fn check_header(&self, request: &Request<Body>) -> Result<bool, io::Error> {
-        // TODO: rename these, then handle result in match at the bottom
         let access_key: String = self
             .access_key
             .lock()
@@ -329,8 +335,6 @@ impl Router {
         valid_files: Vec<PathBuf>,
         mut request: Request<Body>,
     ) -> ResponseFuture {
-        // TODO: set up a 404 page. Maybe hyper static file does it?
-
         let requested_path = &root.join(
             match PathBuf::from(&request.uri().path()).strip_prefix("/") {
                 // strip_prefix(x) returns an error if the PathBuf does not
