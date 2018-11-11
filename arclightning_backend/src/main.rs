@@ -1,3 +1,4 @@
+extern crate bcrypt;
 extern crate futures;
 extern crate hyper;
 extern crate hyper_staticfile;

@@ -2,6 +2,7 @@
 // TODO: validate that cookie is sent to frontend correctly
 
 use super::*;
+use bcrypt::verify;
 use futures::{future, Stream};
 use hyper::header::{COOKIE, LOCATION, SET_COOKIE};
 use hyper::rt::Future;
@@ -36,6 +37,7 @@ pub struct Router {
     games: Arc<Mutex<HashMap<String, Game>>>,
     static_dir: PathBuf,
     access_key: Arc<Mutex<Option<AccessKey>>>,
+    password: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -84,6 +86,7 @@ impl hyper::service::NewService for Router {
             games: self.games.clone(),
             static_dir: self.static_dir.clone(),
             access_key: self.access_key.clone(),
+            password: self.password.clone(),
         }))
     }
 }
@@ -94,6 +97,7 @@ impl Router {
             games: Arc::new(Mutex::new(config.games)),
             static_dir: config.static_dir,
             access_key: Arc::new(Mutex::new(None)),
+            password: config.password.unwrap_or("".to_string()),
         }
     }
 
@@ -240,7 +244,11 @@ impl Router {
 
     // Checks password at demo screen
     // If correct, returns serialized access key in the ResponseFuture
-    fn check_password(&mut self, request: Request<Body>, salted_hash: String) -> ResponseFuture {
+    fn check_password(
+        &mut self,
+        request: Request<Body>,
+        hashed_password: String,
+    ) -> ResponseFuture {
         let access_key = self.access_key.clone();
 
         let response = request
@@ -265,7 +273,12 @@ impl Router {
                 }
 
                 let outgoing_json: String =
-                    if check_password(password.to_string(), salted_hash.as_str().as_bytes()) {
+                    if verify(&password, &hashed_password).map_err(|err| {
+                        io::Error::new(
+                            ErrorKind::Other,
+                            format!("Failed to parse BcryptResult: {}", err),
+                        )
+                    })? {
                         let mut guard = access_key.lock().map_err(|err| {
                             io::Error::new(
                                 ErrorKind::Other,
@@ -377,7 +390,7 @@ impl Router {
 
     fn route(&mut self, request: Request<Body>) -> ResponseFuture {
         let root_dir: PathBuf = self.static_dir.clone();
-        let salted_hash: String = String::new();
+        let salted_hash: String = self.password.clone();
         let valid_files: Vec<PathBuf> = match list_files(root_dir.clone()) {
             Ok(v) => v,
             Err(_err) => vec![PathBuf::from("404.html")],

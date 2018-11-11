@@ -1,6 +1,7 @@
+use bcrypt::{hash, verify};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, ErrorKind, Read};
+use std::io::{self, ErrorKind, Read, Write};
 use std::path::PathBuf;
 use toml;
 
@@ -8,8 +9,22 @@ use toml;
 pub struct Config {
     pub listen_port: u16,
     pub static_dir: PathBuf,
-    pub games: HashMap<String, Game>,
     pub password: Option<String>,
+    pub games: HashMap<String, Game>,
+}
+
+impl Config {
+    pub fn set_password(&mut self, password: String) -> std::io::Result<()> {
+        // The cost is set to 4 for our demo purposes to keep speed up
+        let hashed_password = hash(&password, 4).map_err(|err| {
+            io::Error::new(
+                ErrorKind::Other,
+                format!("An error occured when serializing config toml: {}", err),
+            )
+        })?;
+        self.password = Some(hashed_password);
+        Ok(())
+    }
 }
 
 // using PartialEq for unit tests
@@ -20,10 +35,20 @@ pub struct Game {
     pub description: String,
     pub genres: Vec<String>,
     pub thumbnail_path: PathBuf,
-    #[serde(skip_serializing)]
     pub exe_path: PathBuf,
-    #[serde(skip_serializing)]
     pub exe_args: Vec<String>,
+}
+
+pub fn write_toml(config: &Config, toml_filepath: &PathBuf) -> std::io::Result<()> {
+    let toml_string = toml::to_string(&config).map_err(|err| {
+        io::Error::new(
+            ErrorKind::Other,
+            format!("An error occured when serializing config toml: {}", err),
+        )
+    })?;
+    let mut file = File::create(toml_filepath)?;
+
+    file.write_all(toml_string.as_bytes())
 }
 
 pub fn unpack_toml(toml_filepath: &PathBuf) -> Result<Config, io::Error> {

@@ -77,11 +77,15 @@ fn test_json_serialization() {
     let test_json_touhou = "{\"name\":\"Touhou\",\
                             \"description\":\"bullet hell with waifus\",\
                             \"genres\":[\"bullet hell\",\"anime\"],\
-                            \"thumbnail_path\":\"path/to/touhou/thumbnail\"}";
+                            \"thumbnail_path\":\"path/to/touhou/thumbnail\",\
+                            \"exe_path\":\"test_files\\\\touhou_game.exe\",\
+                            \"exe_args\":[\"arg1\",\"arg2\"]}";
     let test_json_mb = "{\"name\":\"Melty Blood\",\
                         \"description\":\"fighter with waifus\",\
                         \"genres\":[\"fighter\",\"anime\",\"2d\"],\
-                        \"thumbnail_path\":\"path/to/melty_blood/thumbnail\"}";
+                        \"thumbnail_path\":\"path/to/melty_blood/thumbnail\",\
+                        \"exe_path\":\"test_files\\\\melty_blood_game.exe\",\
+                        \"exe_args\":[\"arg1\",\"arg2\"]}";
 
     assert_eq!(json_object_touhou, test_json_touhou);
     assert_eq!(json_object_melty_blood, test_json_mb);
