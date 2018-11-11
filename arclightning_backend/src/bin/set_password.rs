@@ -9,3 +9,30 @@
  *
  * This will use the bcrypt crate.
  */
+
+extern crate bcrypt;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+extern crate toml;
+
+mod config;
+mod password;
+
+use config::{unpack_toml, write_toml, Config, Game};
+use std::io;
+use std::path::PathBuf;
+
+fn main() -> Result<(), io::Error> {
+    // Note: This path requires that set_password be run from project root directory
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
+
+    let mut config: Config = unpack_toml(&toml_filepath)?;
+
+    config.set_password("catgirls".to_string());
+
+    write_toml(&config, &toml_filepath)?;
+
+    Ok(())
+}

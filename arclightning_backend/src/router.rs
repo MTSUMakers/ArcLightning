@@ -97,11 +97,7 @@ impl Router {
         }
     }
 
-    fn invalid_endpoint(
-        &self,
-        root: PathBuf,
-        mut request: Request<Body>,
-    ) -> ResponseFuture {
+    fn invalid_endpoint(&self, root: PathBuf, mut request: Request<Body>) -> ResponseFuture {
         // In case of an invalid endpoint, serve the static 404.html page
         *request.uri_mut() = hyper::Uri::from_static("/404.html");
 
@@ -112,8 +108,11 @@ impl Router {
                     .map_err(|err| {
                         io::Error::new(
                             ErrorKind::Other,
-                            format!("An error occured when constructing 404 error\
-                                     after invalid endpoint: {}", err),
+                            format!(
+                                "An error occured when constructing 404 error\
+                                 after invalid endpoint: {}",
+                                err
+                            ),
                         )
                     })
             }).and_then(|response| future::result(response));
@@ -130,8 +129,11 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when redirecting to\
-                                 /demonstration.html: {}", err),
+                        format!(
+                            "An error occured when redirecting to\
+                             /demonstration.html: {}",
+                            err
+                        ),
                     )
                 }),
         ))
@@ -145,8 +147,11 @@ impl Router {
                 .map_err(|err| {
                     io::Error::new(
                         ErrorKind::Other,
-                        format!("An error occured when accessing \
-                                 invalid api endpoint: {}", err),
+                        format!(
+                            "An error occured when accessing \
+                             invalid api endpoint: {}",
+                            err
+                        ),
                     )
                 }),
         ))
