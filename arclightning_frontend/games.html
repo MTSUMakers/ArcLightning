@@ -19,44 +19,70 @@
         h1{
          	font-family: 'Do Hyeon', sans-serif;
          	font-size:64px;
-       }
-	
-	.selectedClass {
-		background-color: blue;
-	}
-	.unselectedClass {
-		border: 1px solid black;
-		height: 42vh;
-		padding: 10px;
-		margin-bottom: 15px;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
+        }
+        .selectedGame {
+            background-color: #b19cd9;
+            box-shadow:0px 0px 0px 5px #2bd1fc;
+            border-radius: 25px;
+        }
+        .allGames {  
+            font-size: 36px; 
+            font-family: 'Do Hyeon'; 
+            color: #b19cd9; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 256px 
+        }
+        .container-fluid{
+            height: 100%; 
+            margin-right: -50px; 
+            padding-right: 50px; 
+            overflow-y: scroll;
+        }
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background-color: #101010;
+        }
 	</style>
 </head>
 
 <body>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2" id="playerOneQR" style="margin-top: 5px;">
-                <div style="font-size: 24px; font-family: 'Do Hyeon'">Player 1 Login</div>
-            </div>
-            <h1 class="col-md-8" style="text-align: center;">Arc Lightning</h1>
-            <div class="col-md-2" align="right" style="margin-top: 5px;" id="playerTwoQR">
-                <div style="font-size: 24px; font-family: 'Do Hyeon'">Player 2 Login</div>
-            </div>
+        <div class="row text-center">
+            <img src="images/logo.png" style="width: 35%;">
         </div>
-        <div style="margin-top: 5px" class="row" id="games">
-            <!--        <p>{{ sortAlphabetical() }}</p>       -->
-            <div class="col-sm-2 unselectedClass" v-for="(item,key) in items" v-bind:class="{ selectedClass: key == selectedIndex }">
-                <!--		<span>{{ sortAlphabetical() }}</span> -->
+        <div class="container" id="games" @keyup.enter="Enter" @keyup.up="ArrowUp" @keyup.down="ArrowDown" style="height: 63vh">
 
-                <img style="display:block;position:relative;height:90%; width:90%; margin-left: auto; margin-right:auto; "
-                    src v-bind:src="item.thumbnail_path" />
-                <div style="text-align: center; border-top: 1px solid black; font-family: 'Do Hyeon', sans-serif; font-size: 24px;">
-                    {{ item.name }}</div>
-                <!--{{ item.genre[0] }} -->
+            <div class="row" style="opacity: 0.3; height: 256px;">
+                <div class="col-md-6" style="height: 256px">
+                    <p class="allGames">{{ prevName }}</p>
+                </div>
+                <img style="display:block;position:relative; margin-left: auto; margin-right:auto;" :src="prevImage" />
             </div>
+
+            <div class="row selectedGame" style="height: 256px;">
+                <div class="col-md-6" style="height: 256px">
+                    <p class="allGames" style="font-size: 54px; color: white">{{ currentName }}</p>
+                </div>
+                <img style="display:block;position:relative; margin-left: auto; margin-right:auto;" :src="currentImage" />
+            </div>
+
+            <div class="row" style="opacity: 0.3; height: 256px;">
+                <div class="col-md-6" style="height: 256px">
+                    <p class="allGames">{{ nextName }}</p>
+                </div>
+                <img style="display:block;position:relative; margin-left: auto; margin-right:auto;" :src="nextImage" />
+            </div>
+
+        </div>
+
+        <div class="col-md-1" id="playerOneQR" style="margin-top: 5px; margin-bottom: 10px;">
+            <div style="font-size: 24px; font-family: 'Do Hyeon'; color: white; margin-left: 6px">Player 1 Login</div>
+        </div>
+        <div class="col-md-11" align="right" style="margin-top: 5px;" id="playerTwoQR">
+            <div style="font-size: 24px; font-family: 'Do Hyeon'; color: white; margin-right: 7px">Player 2 Login</div>
         </div>
     </div>
 </body>
@@ -69,122 +95,88 @@
         },
         data: {
             qrStr: '', ranHex: '',
-            selectedIndex: "touhou",
-            items: {
-                'smash': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
-                'touhou': { name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
-                'meltyblood': { name: "Melty Blood", description: "fighter with waifus", genre: ["ygenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-                'smash2': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["dgenre", "crossover"], thumbnail_path: 'images/peach.png' },
-                'meltyBlood2': { name: "Melty Blood", description: "fighter with waifus", genre: ["agenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-                'touhou2': { name: "Touhou", description: "bullet hell with waifus", genre: ["ygenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
-                'meltyBlood3': { name: "Melty Blood", description: "fighter with waifus", genre: ["cgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-                'smash3': { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
-                'meltyBlood3': { name: "Melty Blood", description: "fighter with waifus", genre: ["zgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-                'touhou3': { name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+            selectedIndex: 0,
+            items: [{ name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
+            { name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+            { name: "Melty Blood", description: "fighter with waifus", genre: ["ygenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+            { name: "Super Smash Bros", description: "crossover fighting game", genre: ["dgenre", "crossover"], thumbnail_path: 'images/peach.png' },
+            { name: "Melty Blood", description: "fighter with waifus", genre: ["agenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+            { name: "Touhou", description: "bullet hell with waifus", genre: ["ygenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
+            { name: "Melty Blood", description: "fighter with waifus", genre: ["cgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+            { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
+            { name: "Melty Blood", description: "fighter with waifus", genre: ["zgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
+            { name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' }
+            ]
+        },
+        computed: {
+            currentImage() {
+                return this.items[this.selectedIndex].thumbnail_path;
+            },
+            prevImage() {
+                if (this.selectedIndex - 1 < 0)
+                    return this.items[this.items.length - 1].thumbnail_path
+                else
+                    return this.items[this.selectedIndex - 1].thumbnail_path
+            },
+            nextImage() {
+                if (this.selectedIndex + 1 >= this.items.length)
+                    return this.items[0].thumbnail_path
+                else
+                    return this.items[this.selectedIndex + 1].thumbnail_path;
+            },
+            currentName() {
+                return this.items[this.selectedIndex].name;
+            },
+            prevName() {
+                if (this.selectedIndex - 1 < 0)
+                    return this.items[this.items.length - 1].name
+                else
+                    return this.items[this.selectedIndex - 1].name;
+            },
+            nextName() {
+                if (this.selectedIndex + 1 >= this.items.length)
+                    return this.items[0].name
+                else
+                    return this.items[this.selectedIndex + 1].name;
             }
         },
         methods: {
             sendSelectedGame: function () {
                 //check to see if game exists
-                var gameSelected = this.items[this.selectedIndex];
-                if (gameSelected)
-                    alert(this.selectedIndex)
+                var gameSelected = this.items[this.selectedIndex].name
+                alert("You chose: " + gameSelected)
                 axios.post('http://localhost:8000', {
-                    id: this.selectedIndex
+                    id: gameSelected
                 })
-            },
-
-            sortAlphabetical: function () {
-                //vue has a lot of great methods for arrays, however our game objects are dictionaries stored inside another dictionary. So my strategry here was to simply pipe the data into an array, use the sort method, then pipe it back into a dictionary, which dynamically updates site as keys are pressed
-                var sortedArr = [];
-                for (var key in this.items) {
-                    sortedArr[sortedArr.length] = key;
-                }
-                sortedArr.sort();
-                var resultDict = {};
-                for (var i = 0; i < sortedArr.length; i++) {
-                    resultDict[sortedArr[i]] = this.items[sortedArr[i]];
-                }
-                this.items = resultDict;
-            },
-
-            sortGenre: function () {
-                //create array of unique genres
-                var genreArr = [];
-                var unique = true;
-                for (var key in this.items) {
-                    unique = true;
-                    for (var gen in genreArr) {
-                        if (this.items[key].genre[0] == genreArr[gen]) {
-                            unique = false;
-                        }
-                    }
-                    if (unique == true) {
-                        genreArr[genreArr.length] = this.items[key].genre[0];
-                    }
-                }
-                //put game objects back into a dictionary based on the unique genres
-                var resultDict = {};
-                //for each unique genre and for each game object, compare the genre from genArr with the one inside the game object. If they match, add it to the dictionary.
-                for (var gen in genreArr) {
-                    for (key in this.items) {
-                        if (this.items[key].genre[0] == genreArr[gen]) {
-                            resultDict[key] = this.items[key];
-                        }
-                    }
-                }
-                this.items = resultDict;
             },
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
                 this.ranHex = Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
                 this.qrStr = hostname + this.ranHex
             },
-
+            activateImage(imageIndex) {
+                this.selectedIndex = imageIndex;
+            },
             onKeyUp(event) {
                 var ids = Object.keys(this.items);
                 switch (event.key) {
-                    case "k":
-                        this.sortGenre();
-                        break;
-                    case "h":
-                        this.sortAlphabetical();
-                        break;
                     case "l":
                         window.location.href = 'demonstration.html';
                         break;
-                    case "ArrowRight":
-                        for (var i = 0; i < ids.length - 1; i++) {
-                            if (this.selectedIndex == ids[i]) {
-                                this.selectedIndex = ids[i + 1];
-                                break;
-                            }
-                        }
-                        break;
-                    case "ArrowLeft":
-                        for (var i = 1; i < ids.length; i++) {
-                            if (this.selectedIndex == ids[i]) {
-                                this.selectedIndex = ids[i - 1];
-                                break;
-                            }
-                        }
-                        break;
                     case "ArrowUp":
-                        for (var i = 5; i < ids.length; i++) {
-                            if (this.selectedIndex == ids[i]) {
-                                this.selectedIndex = ids[i - 5];
-                                break;
-                            }
+                        var active = this.selectedIndex - 1;
+                        if (active < 0) {
+                            active = this.items.length - 1;
                         }
+                        this.activateImage(active);
 
                         break;
                     case "ArrowDown":
-                        for (var i = 0; i < ids.length - 5; i++) {
-                            if (this.selectedIndex == ids[i]) {
-                                this.selectedIndex = ids[i + 5];
-                                break;
-                            }
+                        var active = this.selectedIndex + 1;
+                        if (active >= this.items.length) {
+                            active = 0;
                         }
+                        this.activateImage(active);
                         break;
                     case "Enter":
                         this.sendSelectedGame();
@@ -208,4 +200,5 @@
         }
     });
 </script>
+
 </html>
