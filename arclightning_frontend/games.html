@@ -3,7 +3,6 @@
 
 <head>
     <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
@@ -58,14 +57,12 @@
                 </div>
                 <img style="display:block;position:relative; margin-left: auto; margin-right:auto;" :src="prevImage" />
             </div>
-
             <div class="row selectedGame" style="height: 256px;">
                 <div class="col-md-6" style="height: 256px">
                     <p class="allGames" style="font-size: 54px; color: white">{{ currentName }}</p>
                 </div>
                 <img style="display:block;position:relative; margin-left: auto; margin-right:auto;" :src="currentImage" />
             </div>
-
             <div class="row" style="opacity: 0.3; height: 256px;">
                 <div class="col-md-6" style="height: 256px">
                     <p class="allGames">{{ nextName }}</p>
@@ -83,12 +80,13 @@
         </div>
     </div>
 </body>
+
 <script type="text/javascript">
     var app = new Vue({
         el: '#games',
         created() {
-            this.onKeyUp = this.onKeyUp.bind(this);
-            document.addEventListener('keyup', this.onKeyUp);
+            this.onKeyUp = this.onKeyUp.bind(this)
+            document.addEventListener('keyup', this.onKeyUp)
             axios.get('http://127.0.0.1:3000/api/v1/list_games')
                 .then(response => {
                     this.results = response.data
@@ -104,46 +102,39 @@
             results: {}, items: [],
         },
         computed: {
-
             currentImage() {
                 return this.items[this.selectedIndex].thumbnail_path
             },
             prevImage() {
-
-                if (this.selectedIndex - 1 < 0)
-                    return this.items[this.items.length - 1].thumbnail_path
-                else
-                    return this.items[this.selectedIndex - 1].thumbnail_path
+                return (this.selectedIndex - 1 < 0 ? 
+                this.items[this.items.length - 1].thumbnail_path : 
+                this.items[this.selectedIndex - 1].thumbnail_path)
             },
             nextImage() {
-                if (this.selectedIndex + 1 >= this.items.length)
-                    return this.items[0].thumbnail_path
-                else
-                    return this.items[this.selectedIndex + 1].thumbnail_path;
+                return (this.selectedIndex + 1 >= this.items.length ? 
+                this.items[0].thumbnail_path : 
+                this.items[this.selectedIndex + 1].thumbnail_path)
             },
             currentName() {
-                return this.items[this.selectedIndex].name;
+                return this.items[this.selectedIndex].name
             },
             prevName() {
-                if (this.selectedIndex - 1 < 0)
-                    return this.items[this.items.length - 1].name
-                else
-                    return this.items[this.selectedIndex - 1].name;
+                return (this.selectedIndex - 1 < 0 ? 
+                this.items[this.items.length - 1].name : 
+                this.items[this.selectedIndex - 1].name)
             },
             nextName() {
-                if (this.selectedIndex + 1 >= this.items.length)
-                    return this.items[0].name
-                else
-                    return this.items[this.selectedIndex + 1].name;
+                return (this.selectedIndex + 1 >= this.items.length ? 
+                this.items[0].name : 
+                this.items[this.selectedIndex + 1].name)
             }
         },
         methods: {
             sendSelectedGame: function () {
                 var gameSelected = this.items[this.selectedIndex].name
-                alert("You chose: " + gameSelected)
-                axios.post('http://127.0.0.1:3000', {
-                    id: gameSelected // this needs to be updated to match the endpoint for game selection
-                })
+                alert("You chose: " + gameSelected) // remove this line once next line is updated
+                // this needs to be updated to match the endpoint for game selection
+                // axios.post('http://127.0.0.1:3000', { id: gameSelected })
             },
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
@@ -151,32 +142,27 @@
                 this.qrStr = hostname + this.ranHex
             },
             activateImage(imageIndex) {
-                this.selectedIndex = imageIndex;
+                this.selectedIndex = imageIndex
             },
             onKeyUp(event) {
-                var ids = Object.keys(this.items);
+                var ids = Object.keys(this.items)
                 switch (event.key) {
                     case "l":
-                        window.location.href = 'demonstration.html';
-                        break;
+                        window.location.href = 'demonstration.html'
+                        break
                     case "ArrowUp":
-                        var active = this.selectedIndex - 1;
-                        if (active < 0) {
-                            active = this.items.length - 1;
-                        }
-                        this.activateImage(active);
-
-                        break;
+                        var active = this.selectedIndex - 1
+                        if (active < 0) { active = this.items.length - 1 }
+                        this.activateImage(active)
+                        break
                     case "ArrowDown":
-                        var active = this.selectedIndex + 1;
-                        if (active >= this.items.length) {
-                            active = 0;
-                        }
-                        this.activateImage(active);
-                        break;
+                        var active = this.selectedIndex + 1
+                        if (active >= this.items.length) { active = 0 }
+                        this.activateImage(active)
+                        break
                     case "Enter":
-                        this.sendSelectedGame();
-                        break;
+                        this.sendSelectedGame()
+                        break
                 }
             }
 
@@ -195,7 +181,7 @@
                 height: 150
             })
         }
-    });
+    })
 </script>
 
 </html>
