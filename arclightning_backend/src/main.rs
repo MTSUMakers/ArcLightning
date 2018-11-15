@@ -13,7 +13,7 @@ mod password;
 mod router;
 mod tests;
 
-use config::{unpack_toml, Config, Game};
+use config::{load, Config, Game};
 use futures::Future;
 use hyper::Server;
 use password::check_password;
@@ -27,7 +27,7 @@ fn main() -> Result<(), io::Error> {
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
 
     // Unpack config
-    let config: Config = unpack_toml(&toml_filepath)?;
+    let config: Config = load(&toml_filepath)?;
 
     // Host server
     let addr = ([127, 0, 0, 1], config.listen_port).into();

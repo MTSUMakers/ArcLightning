@@ -30,7 +30,7 @@ impl Config {
     pub fn write_to_path(&self, toml_filepath: &PathBuf) -> std::io::Result<()> {
         let mut file = File::create(toml_filepath)?;
 
-        let toml_string = toml::to_string(&config).map_err(|err| {
+        let toml_string = toml::to_string(&self).map_err(|err| {
             io::Error::new(
                 ErrorKind::Other,
                 format!("An error occured when serializing config toml: {}", err),

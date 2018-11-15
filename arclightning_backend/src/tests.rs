@@ -30,7 +30,7 @@ fn test_paths() {
 fn test_read_toml() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    let config: Config = load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
@@ -65,7 +65,7 @@ fn test_read_toml() {
 fn test_json_serialization() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    let config: Config = load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
@@ -95,7 +95,7 @@ fn test_json_serialization() {
 fn test_games_serialization() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = unpack_toml(&toml_filepath).unwrap();
+    let config: Config = load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
