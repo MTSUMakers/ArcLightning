@@ -3,6 +3,8 @@
 
 <head>
     <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
@@ -14,6 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script type="text/javascript" src="qrcode.js"></script>
     <style>
+        h1{
+         	font-family: 'Do Hyeon', sans-serif;
+         	font-size:64px;
+        }
         .selectedGame {
             background-color: #b19cd9;
             box-shadow:0px 0px 0px 5px #2bd1fc;
@@ -47,8 +53,10 @@
         <div class="row text-center">
             <img src="images/logo.png" style="width: 35%;">
         </div>
+
         <div class="container" id="games" @keyup.enter="Enter" @keyup.up="ArrowUp" @keyup.down="ArrowDown" style="height: 63vh">
 
+		
             <div class="row" style="opacity: 0.3; height: 256px;">
                 <div class="col-md-6" style="height: 256px">
                     <p class="allGames">{{ prevName }}</p>
@@ -80,95 +88,176 @@
         </div>
     </div>
 </body>
-
 <script type="text/javascript">
     var app = new Vue({
         el: '#games',
         created() {
-            this.onKeyUp = this.onKeyUp.bind(this)
-            document.addEventListener('keyup', this.onKeyUp)
+            this.onKeyUp = this.onKeyUp.bind(this);
+            document.addEventListener('keyup', this.onKeyUp);
+	
+		
+	    //this needs to load sooner, it only loads the data once you hit the up or down arrow for the first time, but the console shows that the data loads before that, so i dont heckin know
+           axios.get('http://127.0.0.1:3000/api/v1/list_games')
+		.then(response=> 
+		{	
+			alert("inside get");
+			this.results = response.data;
+			
+			for(var key in this.results){
+				this.results[key].thumbnail_path = 'images/touhouWaifu.png';
+				this.items[this.items.length] = this.results[key];
+			//	alert(this.items[this.items.length-1].description);
+			}
+	
+		
+		})
+		.catch(function(error){alert(error);})  
+	
+	console.log(this.items);
+
+
         },
         data: {
             qrStr: '', ranHex: '',
             selectedIndex: 0,
-            items: [{ name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
+	    results: {},
+	    //items: [],
+
+	//I DONT KNOW WYHY THIS HAS TO BE EHRE BUT IT DOES FOR RIGHT NOW :(	
+	    items: [{name: "", description: "new gam", genre: ['doot', 'doot'], thumbnail_path: ''}],
+
+        /*    items: [{ name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
             { name: "Touhou", description: "bullet hell with waifus", genre: ["zgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
             { name: "Melty Blood", description: "fighter with waifus", genre: ["ygenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-            { name: "Super Smash Bros", description: "crossover fighting game", genre: ["dgenre", "crossover"], thumbnail_path: 'images/peach.png' },
-            { name: "Melty Blood", description: "fighter with waifus", genre: ["agenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-            { name: "Touhou", description: "bullet hell with waifus", genre: ["ygenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' },
-            { name: "Melty Blood", description: "fighter with waifus", genre: ["cgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-            { name: "Super Smash Bros", description: "crossover fighting game", genre: ["agenre", "crossover"], thumbnail_path: 'images/peach.png' },
-            { name: "Melty Blood", description: "fighter with waifus", genre: ["zgenre", "anime", "2d"], thumbnail_path: 'images/meltyBloodWaifu.jpg' },
-            { name: "Touhou", description: "bullet hell with waifus", genre: ["bgenre", "anime"], thumbnail_path: 'images/touhouWaifu.png' }
-            ]
-        },
-        computed: {
+            ] */
+        }, 
+        computed: { 
+
             currentImage() {
-                return this.items[this.selectedIndex].thumbnail_path
+                return this.items[this.selectedIndex].thumbnail_path;
             },
             prevImage() {
-                return (this.selectedIndex - 1 < 0 ?
-                    this.items[this.items.length - 1].thumbnail_path :
-                    this.items[this.selectedIndex - 1].thumbnail_path)
+
+                if (this.selectedIndex - 1 < 0)
+                    return this.items[this.items.length - 1].thumbnail_path
+                else
+                    return this.items[this.selectedIndex - 1].thumbnail_path
             },
             nextImage() {
-                return (this.selectedIndex + 1 >= this.items.length ?
-                    this.items[0].thumbnail_path :
-                    this.items[this.selectedIndex + 1].thumbnail_path)
+                if (this.selectedIndex + 1 >= this.items.length)
+                    return this.items[0].thumbnail_path
+                else
+                    return this.items[this.selectedIndex + 1].thumbnail_path;
             },
             currentName() {
-                return this.items[this.selectedIndex].name
+                return this.items[this.selectedIndex].name;
             },
             prevName() {
-                return (this.selectedIndex - 1 < 0 ?
-                    this.items[this.items.length - 1].name :
-                    this.items[this.selectedIndex - 1].name)
+                if (this.selectedIndex - 1 < 0)
+                    return this.items[this.items.length - 1].name
+                else
+                    return this.items[this.selectedIndex - 1].name;
             },
             nextName() {
-                return (this.selectedIndex + 1 >= this.items.length ?
-                    this.items[0].name :
-                    this.items[this.selectedIndex + 1].name)
+                if (this.selectedIndex + 1 >= this.items.length)
+                    return this.items[0].name
+                else
+                    return this.items[this.selectedIndex + 1].name;
             }
         },
         methods: {
             sendSelectedGame: function () {
+                //check to see if game exists
                 var gameSelected = this.items[this.selectedIndex].name
                 alert("You chose: " + gameSelected)
                 axios.post('http://localhost:8000', {
                     id: gameSelected
                 })
             },
+
+
+		//I put this in a function to test it somewhere and it didnt work of course, but im leaving it here in case I need it in the future
+            getGames: function () {
+           	axios.get('http://127.0.0.1:3000/api/v1/list_games')
+		.then(response=> 
+		{	
+			this.results = response.data;
+			
+			for(var key in this.results){
+
+				this.results[key].thumbnail_path = 'images/touhouWaifu.png';
+				this.items[this.items.length] = this.results[key];
+				//alert(this.items[this.items.length-1].description);
+			}
+	
+		
+		})
+		.catch(function(error){alert(error);}) 
+               return this.items; 
+            },
+
+
+
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
                 this.ranHex = Array.prototype.map.call(window.crypto.getRandomValues(new Uint8Array(32)), x => ('00' + x.toString(16)).slice(-2)).join('')
                 this.qrStr = hostname + this.ranHex
             },
             activateImage(imageIndex) {
-                this.selectedIndex = imageIndex
+                this.selectedIndex = imageIndex;
             },
             onKeyUp(event) {
+                var ids = Object.keys(this.items);
                 switch (event.key) {
                     case "l":
-                        window.location.href = 'demonstration.html'
-                        break
+                        window.location.href = 'demonstration.html';
+                        break;
                     case "ArrowUp":
-                        var active = this.selectedIndex - 1
-                        if (active < 0) active = this.items.length - 1
-                        this.activateImage(active)
-                        break
+                        var active = this.selectedIndex - 1;
+                        if (active < 0) {
+                            active = this.items.length - 1;
+                        }
+                        this.activateImage(active);
+
+                        break;
                     case "ArrowDown":
-                        var active = this.selectedIndex + 1
-                        if (active >= this.items.length) active = 0
-                        this.activateImage(active)
-                        break
+                        var active = this.selectedIndex + 1;
+                        if (active >= this.items.length) {
+                            active = 0;
+                        }
+                        this.activateImage(active);
+                        break;
                     case "Enter":
-                        this.sendSelectedGame()
-                        break
+                        this.sendSelectedGame();
+                        break;
                 }
             }
+
         },
+	
+	
         mounted: function () {
+
+	   //you would think that you could put this in the mounted function so that it would get called before the html loads, but noooooooo it doesnt do what i want it to of course
+/*           axios.get('http://127.0.0.1:3000/api/v1/list_games')
+		.then(response=> 
+		{	
+			alert("inside get");
+			this.results = response.data;
+			
+			for(var key in this.results){
+
+				alert("inside key");
+				this.results[key].thumbnail_path = 'images/touhouWaifu.png';
+				this.items[this.items.length] = this.results[key];
+				alert(this.items[this.items.length-1].description);
+			}
+	
+		
+		})
+		.catch(function(error){alert(error);})  */
+
+	
             this.qrGen("example.com/check_in?key=")
             new QRCode(document.getElementById("playerOneQR"), {
                 text: this.qrStr,
@@ -180,9 +269,12 @@
                 text: this.qrStr,
                 width: 150,
                 height: 150
-            })
+            }) 
+
+
         }
-    })
+
+    });
 </script>
 
 </html>
