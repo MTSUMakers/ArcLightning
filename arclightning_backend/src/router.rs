@@ -300,7 +300,7 @@ impl Router {
 
                 Response::builder()
                     .status(StatusCode::OK)
-                    .header(SET_COOKIE, session_token)
+                    .header("XSRF-TOKEN", session_token)
                     .body(Body::from(outgoing_json))
                     .map_err(|err| {
                         io::Error::new(

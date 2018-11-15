@@ -11,6 +11,7 @@
  */
 
 extern crate bcrypt;
+extern crate rpassword;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -29,7 +30,14 @@ fn main() -> Result<(), io::Error> {
 
     let mut config: Config = unpack_toml(&toml_filepath)?;
 
-    config.set_password("catgirls".to_string());
+    let mut pass: String = "a";
+    let mut pass_check: String = "b";
+    while pass != pass_check{
+        pass = rpassword::prompt_password_stdout("Enter new password: ")?;
+        pass_check = rpassword::prompt_password_stdout("Re-type password: ")?;
+    }
+
+    config.set_password(pass);
 
     write_toml(&config, &toml_filepath)?;
 
