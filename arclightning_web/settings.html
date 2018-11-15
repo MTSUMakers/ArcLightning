@@ -1,0 +1,96 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!doctype html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
+    <!--bootstrap-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <!-- Vuejs -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        .centerItem {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .formattedText {
+            font-family: 'Do Hyeon', sans-serif;
+            font-size: 42px;
+        }
+	
+    </style>
+</head>
+
+<body>
+
+
+<nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="../arclightning_frontend/images/logo.png" style="height: 250%;" alt="">
+  </a>
+	<ul class="nav nav-tabs navbar-right">
+		<li role="presentation" class="active" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="#">settings</a></li>
+		<li role="presentation"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="login.html">log out</a></li>
+	</ul>
+
+</nav> 
+    <div class="row" style="width:100vw; height:100vh; padding:0; margin:0;">
+        <div id="settings" class="col-xs-12 col-lg-8 col-lg-offset-2" style="height:100vh; width: 100%;">
+
+            <form id="settingForm" class="formattedText" v-on:submit="submitSettings()">
+               <br> <input type="text" maxlength="200" id="name" style=" top: 10%; text-align:center;width: 100%; border:none; border-bottom: 2px solid black;" v-model="name" v-bind:style="{color: profile_fgcolor, 'background-color': profile_bgcolor}"required /><br>
+
+		<h1 class="formattedText centerItem" >Name color:</h1>
+                <input class="centerItem" type="color" style="height: 50px; width:80%;" id="profile_fgcolor"  value="#333999" v-model="profile_fgcolor"/>
+
+		<h1 class="formattedText" style="display:inline">Background color:</h1>
+                <input class="centerItem" type="color" style="height: 50px; width: 80%;" id="profile_bgcolor" value="#219444" v-model="profile_bgcolor" />
+
+                <p class="formattedText">Volume: </p>
+		<input class="centerItem" data-slider-id="volumeSlider" type="range" id="volume" style="width: 80%;" min="0.0" max="1.0" step = "0.05" v-model="volume"/>
+
+		</form>
+            <button form="settingForm" class="formattedText centerItem" style="margin: 10px 0; width: 100%;">apply</button>
+        </div>
+    </div>
+</body>
+<script>
+
+
+    new Vue({
+        el: '#settings',
+	data: {
+		//this information will eventually be set to values gathered from get request 	
+		name : '$$username$$',
+		profile_fgcolor: '#b0ffed',
+		profile_bgcolor: '#000000',
+		volume: '0.5',
+		results: [] //results from get request will be stored here
+
+	},
+        methods: {
+            submitSettings: function () {
+                    axios.post('hostname/api/v1/edit_settings', JSON.stringify({ name: this.name, profile_fgcolor: this.profile_fgcolor, profile_bgcolor: this.profile_bgcolor, volume: this.volume }))
+                    alert('Settings changed successfully!')
+            },
+	   getSettings: function(){
+		//when endpoint is set up, this should fill in results and from there I should be able to populate the page with the response data   
+		axios.get('hostname/api/v1/check_settings')
+			.then(response=> {this.results = response.data.results})
+		}
+
+        },
+	beforeMount(){
+		this.getSettings()
+	}
+
+    })
+
+</script>
+
+</html>
