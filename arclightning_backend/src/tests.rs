@@ -1,6 +1,9 @@
 #![cfg(test)]
-use super::*;
+use config::{Config, Game};
+use password;
 use router::list_files;
+use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[test]

@@ -1,8 +1,8 @@
 // TODO: expire cookie after 12 hours
 // TODO: validate that cookie is sent to frontend correctly
 
-use super::*;
 use bcrypt::verify;
+use config::{Config, Game};
 use futures::{future, Stream};
 use hyper::header::{COOKIE, LOCATION, SET_COOKIE};
 use hyper::rt::Future;

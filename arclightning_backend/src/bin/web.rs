@@ -202,3 +202,5 @@ impl WebRouter {
         }
     }
 }
+
+fn main() {}
