@@ -26,6 +26,19 @@ impl Config {
         self.password = Some(hashed_password);
         Ok(())
     }
+
+    pub fn write_to_path(&self, toml_filepath: &PathBuf) -> std::io::Result<()> {
+        let mut file = File::create(toml_filepath)?;
+
+        let toml_string = toml::to_string(&config).map_err(|err| {
+            io::Error::new(
+                ErrorKind::Other,
+                format!("An error occured when serializing config toml: {}", err),
+            )
+        })?;
+
+        file.write_all(toml_string.as_bytes())
+    }
 }
 
 // using PartialEq for unit tests
@@ -40,19 +53,8 @@ pub struct Game {
     pub exe_args: Vec<String>,
 }
 
-pub fn write_toml(config: &Config, toml_filepath: &PathBuf) -> std::io::Result<()> {
-    let toml_string = toml::to_string(&config).map_err(|err| {
-        io::Error::new(
-            ErrorKind::Other,
-            format!("An error occured when serializing config toml: {}", err),
-        )
-    })?;
-    let mut file = File::create(toml_filepath)?;
 
-    file.write_all(toml_string.as_bytes())
-}
-
-pub fn unpack_toml(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
+pub fn load(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
     let mut config_toml = String::new();
     File::open(&toml_filepath)?.read_to_string(&mut config_toml)?;
 
