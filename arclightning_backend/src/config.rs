@@ -5,7 +5,6 @@ use std::io::{self, ErrorKind, Read, Write};
 use std::path::PathBuf;
 use toml;
 
-
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Config {
     pub listen_port: u16,
@@ -15,7 +14,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn set_password(&mut self, password: String) -> std::io::Result<()> {
+    pub fn set_password(&mut self, password: &str) -> std::io::Result<()> {
         // The cost is set to 4 for our demo purposes to keep speed up
         let hashed_password = hash(&password, 4).map_err(|err| {
             io::Error::new(
@@ -52,7 +51,6 @@ pub struct Game {
     pub exe_path: PathBuf,
     pub exe_args: Vec<String>,
 }
-
 
 pub fn load(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
     let mut config_toml = String::new();

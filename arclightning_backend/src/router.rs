@@ -58,8 +58,8 @@ struct AccessKey {
 impl AccessKey {
     pub fn new(access_key: String, access_time: u64) -> Self {
         AccessKey {
-            access_key: access_key.clone(),
-            access_time: access_time,
+            access_key: access_key,
+            access_time,
         }
     }
     pub fn dummy() -> Self {
@@ -103,11 +103,11 @@ impl Router {
             games: Arc::new(Mutex::new(config.games)),
             static_dir: config.static_dir,
             access_key: Arc::new(Mutex::new(None)),
-            password: config.password.unwrap_or("".to_string()),
+            password: config.password.unwrap_or_else(|| "".to_string()),
         }
     }
 
-    fn invalid_endpoint(&self, root: PathBuf, mut request: Request<Body>) -> ResponseFuture {
+    fn invalid_endpoint(&self, root: &PathBuf, mut request: Request<Body>) -> ResponseFuture {
         // In case of an invalid endpoint, serve the static 404.html page
         *request.uri_mut() = hyper::Uri::from_static("/404.html");
 
@@ -125,7 +125,7 @@ impl Router {
                             ),
                         )
                     })
-            }).and_then(|response| future::result(response));
+            }).and_then(future::result);
 
         Box::new(response)
     }
@@ -329,7 +329,7 @@ impl Router {
                     format!("Failed to acquire mutex on access key: {}", err),
                 )
             })?.clone()
-            .unwrap_or(AccessKey::dummy())
+            .unwrap_or_else(AccessKey::dummy)
             .access_key;
         /*
             .map_or(|| {
@@ -347,7 +347,7 @@ impl Router {
             .ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to acquire cookie from header"),
+                    "Failed to acquire cookie from header",
                 )
             })?.to_str()
             .map_err(|err| {
@@ -362,8 +362,8 @@ impl Router {
 
     fn serve_static_file(
         &self,
-        root: PathBuf,
-        valid_files: Vec<PathBuf>,
+        root: &PathBuf,
+        valid_files: &[PathBuf],
         mut request: Request<Body>,
     ) -> ResponseFuture {
         let requested_path = &root.join(
@@ -377,7 +377,7 @@ impl Router {
             },
         );
 
-        if requested_path == &root {
+        if requested_path == root {
             *request.uri_mut() = hyper::Uri::from_static("/index.html");
         } else if !valid_files.contains(&requested_path) {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
@@ -393,7 +393,7 @@ impl Router {
                             format!("An error occured when building a response: {}", err),
                         )
                     })
-            }).and_then(|response| future::result(response));
+            }).and_then(future::result);
 
         Box::new(response)
     }
@@ -431,9 +431,9 @@ impl Router {
 
             (&Method::GET, "/games.html", false) => self.redirect_endpoint(),
 
-            (&Method::GET, _, _) => self.serve_static_file(root_dir, valid_files, request),
+            (&Method::GET, _, _) => self.serve_static_file(&root_dir, &valid_files, request),
 
-            _ => self.invalid_endpoint(root_dir, request),
+            _ => self.invalid_endpoint(&root_dir, request),
         }
     }
 }

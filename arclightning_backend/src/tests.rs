@@ -122,7 +122,7 @@ fn test_check_password() {
 
     println!("{:?}", hashed_password);
 
-    assert!(password::check_password(password, &hashed_password));
+    assert!(password::check_password(&password, &hashed_password));
 }
 
 #[test]
