@@ -10,6 +10,7 @@
  * This will use the bcrypt crate.
  */
 
+extern crate arclightning_backend;
 extern crate bcrypt;
 extern crate rpassword;
 #[macro_use]
@@ -18,9 +19,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
-mod config;
 
-use config::{unpack_toml, write_toml, Config, Game};
+use arclightning_backend::config::{unpack_toml, write_toml, Config, Game};
 use std::io;
 use std::path::PathBuf;
 

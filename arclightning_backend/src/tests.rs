@@ -30,7 +30,7 @@ fn test_paths() {
 fn test_read_toml() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = load(&toml_filepath).unwrap();
+    let config: Config = Config::load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
@@ -65,7 +65,7 @@ fn test_read_toml() {
 fn test_json_serialization() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = load(&toml_filepath).unwrap();
+    let config: Config = Config::load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
@@ -95,7 +95,7 @@ fn test_json_serialization() {
 fn test_games_serialization() {
     // Read in a specific file
     let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
-    let config: Config = load(&toml_filepath).unwrap();
+    let config: Config = Config::load(&toml_filepath).unwrap();
     println!("{:#?}", config);
     let games = config.games;
 
@@ -129,14 +129,10 @@ fn test_check_password() {
 fn test_hexdump() {
     use rand::Rng;
 
-    let mut rng = rand::thread_rng();
-    let mut s = String::new();
+    let mut session_token = [0u8; 64];
+    rand::thread_rng().fill(&mut session_token[..]);
+    let session_token = hex::encode(&session_token[..]);
 
-    for _ in 0..64 {
-        let v: u8 = rng.gen();
-        s.push_str(&format!("{:02x}", v));
-    }
-
-    println!("{}", s);
-    assert_eq!(hex::decode(s).unwrap().len(), 64);
+    println!("{}", session_token);
+    assert_eq!(hex::decode(session_token).unwrap().len(), 64);
 }

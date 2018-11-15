@@ -38,6 +38,14 @@ impl Config {
 
         file.write_all(toml_string.as_bytes())
     }
+
+    pub fn load(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
+        let mut config_toml = String::new();
+        File::open(&toml_filepath)?.read_to_string(&mut config_toml)?;
+
+        // error casting for homogeneous errors
+        toml::from_str(&config_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
+    }
 }
 
 // using PartialEq for unit tests
@@ -52,10 +60,3 @@ pub struct Game {
     pub exe_args: Vec<String>,
 }
 
-pub fn load(toml_filepath: &PathBuf) -> Result<Config, io::Error> {
-    let mut config_toml = String::new();
-    File::open(&toml_filepath)?.read_to_string(&mut config_toml)?;
-
-    // error casting for homogeneous errors
-    toml::from_str(&config_toml).map_err(|err| io::Error::new(ErrorKind::Other, err))
-}
