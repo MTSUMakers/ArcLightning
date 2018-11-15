@@ -62,6 +62,12 @@ impl AccessKey {
             access_time: access_time,
         }
     }
+    pub fn dummy() -> Self {
+        AccessKey {
+            access_key: "failure_key".to_owned(),
+            access_time: 0u64,
+        }
+    }
 }
 
 impl hyper::service::Service for Router {
@@ -323,12 +329,16 @@ impl Router {
                     format!("Failed to acquire mutex on access key: {}", err),
                 )
             })?.clone()
-            .ok_or_else(|| {
+            .unwrap_or(AccessKey::dummy())
+            .access_key;
+        /*
+            .map_or(|| {
                 io::Error::new(
                     ErrorKind::Other,
                     format!("Failed to map error on access key lock"),
                 )
             })?.access_key;
+        */
 
         let cookie: String = request
             .headers()
@@ -400,7 +410,13 @@ impl Router {
         // put third argument, function checking cookie and request.headers()
         // add True/False for all match arms
         //
-        let correct_cookie: bool = self.check_header(&request).unwrap_or(false);
+        let correct_cookie: bool = match self.check_header(&request) {
+            Ok(v) => v,
+            Err(err) => {
+                println!("{}", err);
+                false
+            }
+        };
 
         match (request.method(), request.uri().path(), correct_cookie) {
             (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
