@@ -271,12 +271,10 @@ impl Router {
                 let password = request_body.password.clone();
 
                 // 64 random bytes encoded as hex and stored as a string
-                let mut rng = rand::thread_rng();
-                let mut session_token: String = String::new();
-                for _ in 0..64 {
-                    let v: u8 = rng.gen();
-                    session_token.push_str(&format!("{:02x}", v));
-                }
+                let mut session_token = [0u8; 64];
+                rand::thread_rng().fill(&mut session_token[..]);
+                let session_token = hex::encode(&session_token[..]);
+
 
                 let outgoing_json: String =
                     if verify(&password, &hashed_password).map_err(|err| {
@@ -296,8 +294,12 @@ impl Router {
                             session_token.clone(),
                             SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
-                                .expect("Time went backwards")
-                                .as_secs(),
+                                .map_err(|err| {
+                                    io::Error::new(
+                                        ErrorKind::Other,
+                                        format!("Time went backwards: {}", err),
+                                    )
+                                })?.as_secs(),
                         ));
                         r#"{"success":true}"#.to_owned()
                     } else {
@@ -345,10 +347,7 @@ impl Router {
             .clone()
             .get(COOKIE)
             .ok_or_else(|| {
-                io::Error::new(
-                    ErrorKind::Other,
-                    "Failed to acquire cookie from header",
-                )
+                io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header")
             })?.to_str()
             .map_err(|err| {
                 io::Error::new(
