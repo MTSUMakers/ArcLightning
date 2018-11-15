@@ -1,11 +1,16 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <!doctype html>
 <html>
-  <head>
+
+<head>
     <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
     <!--bootstrap-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
     <!-- Vuejs -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
         .centerItem {
             display: block;
@@ -15,22 +20,59 @@
 
         .formattedText {
             font-family: 'Do Hyeon', sans-serif;
-            font-size: 64px;
+            font-size: 56px;
         }
     </style>
 </head>
 
 <body>
-    <div class="row" style="width:100%; height:100vh;">
-        <div class="col-md-6 col-md-offset-3" style="height:60vh; top: 20%;">
-	 
-<!-- On pressing submit, send  a POST request to http://hostname/api/v1/signin?username=username&password=password, so just change action url to url above to "http://hostname/api/v1/signin" -->
-      <form class="formattedText" action="http://httpbin.net/post" method="post" >
-	<input type="text" placeholder= "username" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"name="username" /> <br><br>
-	<input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black;" name="password" /><br><br>
-<input type="submit" style="margin: 10px 0; width: 100%;" value="submit" />
-	</form>
-	</div>
+
+<nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="../arclightning_frontend/images/logo.png" style="height: 250%;" alt="">
+  </a>
+	<ul class="nav nav-tabs navbar-right">
+		<li role="presentation" class="active"  style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;"><a href="#">login</a></li>
+		<li role="presentation" style="font-family: 'Do Hyeon', sans-serif; font-size: 18px;color: black;"><a href="registration.html">new account</a></li>
+	</ul>
+
+</nav> 
+
+    <div class="row" style="width:100vw; height:100vh; padding: 0; margin: 0;">
+        <div id="login" class="col-md-6 col-md-offset-3 col-xs-12" style="height:60vh; top: 20%;">
+
+            <form id="loginForm" class="formattedText" v-on:submit="login()">
+                <input type="text" placeholder="username" id="username" style="width: 100%; border:none; border-bottom: 2px solid black;"
+                    v-model="username" required /> <br>
+                <input type="password" placeholder="password" id="password" style="width: 100%; border:none; border-bottom: 2px solid black; bottom: 3px;"
+                    v-model="pw" required /><br>
+            </form>
+
+            <button form="loginForm" class="formattedText" style="margin: 10px 0; width: 100%; line-height: 1.0;">log in</button>
+        </div>
     </div>
 </body>
+<script>
+    new Vue({
+        el: '#login',
+        props: ['username', 'pw',],
+        methods: {
+            login: function () {
+		axios.post('http://hostname/api/v1/signin', JSON.stringify({ username: this.username, password: this.pw }))
+		.then(function (response) {
+			if (response.data == 1) { window.location.href = 'settings.html'}
+			else { alert("Wrong username or password") }
+		}).
+		catch(function (error){
+			alert(error)
+		})
+		
+		}
+	    }
+	})
+
+
+
+</script>
+
 </html>
