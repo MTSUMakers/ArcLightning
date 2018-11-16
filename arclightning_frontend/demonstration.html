@@ -157,7 +157,10 @@
         pwCheck: function () {
           axios.post('http://127.0.0.1:3000/api/v1/check_password', JSON.stringify({ password: this.pw }))
             .then(function (response) {
-              if (response.data.success == true) { window.location.href = 'games.html' }
+              if (response.data.success == true) { 
+                  document.cookie = `sam-token = ${response.headers["sam-token"]}`;
+                  window.location.href = 'games.html' 
+              }
               else { showModal.showModal = false }
             }).
             catch(function (error) {
