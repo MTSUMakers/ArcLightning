@@ -8,7 +8,6 @@ extern crate rand;
 extern crate serde_json;
 extern crate toml;
 
-
 pub mod config;
 pub mod password;
 pub mod router;

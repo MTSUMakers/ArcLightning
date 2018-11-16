@@ -275,7 +275,6 @@ impl Router {
                 rand::thread_rng().fill(&mut session_token[..]);
                 let session_token = hex::encode(&session_token[..]);
 
-
                 let outgoing_json: String =
                     if verify(&password, &hashed_password).map_err(|err| {
                         io::Error::new(
@@ -342,7 +341,7 @@ impl Router {
             })?.access_key;
         */
 
-        let cookie: String = request
+        request
             .headers()
             .clone()
             .get(COOKIE)
@@ -354,9 +353,14 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to convert cookie to string: {}", err),
                 )
-            })?.to_string();
-
-        Ok(cookie == access_key)
+            })?.to_string()
+            .split("=")
+            .skip(1)
+            .next()
+            .map(|cookie| cookie == access_key)
+            .ok_or_else(|| {
+                io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header")
+            })
     }
 
     fn serve_static_file(
