@@ -154,9 +154,9 @@
           this.$emit('close')
         },
         pwCheck: function () {
-          axios.post('http://localhost:8000', JSON.stringify({ password: this.pw }))
+          axios.post('http://127.0.0.1:3000/api/v1/check_password', JSON.stringify({ password: this.pw }))
             .then(function (response) {
-              if (response.data == 1) { window.location.href = 'index.html' }
+              if (response.data.success == true) { window.location.href = 'games.html' }
               else { showModal.showModal = false }
             }).
             catch(function (error) {
