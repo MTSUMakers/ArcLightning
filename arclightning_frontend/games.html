@@ -131,10 +131,11 @@
         },
         methods: {
             sendSelectedGame: function () {
-                var gameSelected = this.items[this.selectedIndex].name
+                // obtains the game_id, stored initially as the key in this.results
+                var gameSelected = Object.keys(this.results)[this.selectedIndex]
                 alert("You chose: " + gameSelected) // remove this line once next line is updated
-                // this needs to be updated to match the endpoint for game selection
-                // axios.post('http://127.0.0.1:3000', { id: gameSelected })
+                // send start game request to corresponding endpoint for game selection
+                axios.post('http://127.0.0.1:3000/api/v1/start_game', { id: gameSelected })
             },
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
