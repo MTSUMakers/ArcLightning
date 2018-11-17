@@ -59,4 +59,3 @@ pub struct Game {
     pub exe_path: PathBuf,
     pub exe_args: Vec<String>,
 }
-

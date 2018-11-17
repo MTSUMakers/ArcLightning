@@ -133,7 +133,7 @@ impl Router {
     fn redirect_endpoint(&self) -> ResponseFuture {
         Box::new(future::result(
             Response::builder()
-                .status(StatusCode::MOVED_PERMANENTLY)
+                .status(StatusCode::TEMPORARY_REDIRECT)
                 .header(LOCATION, "/demonstration.html")
                 .body(Body::empty())
                 .map_err(|err| {
@@ -275,7 +275,6 @@ impl Router {
                 rand::thread_rng().fill(&mut session_token[..]);
                 let session_token = hex::encode(&session_token[..]);
 
-
                 let outgoing_json: String =
                     if verify(&password, &hashed_password).map_err(|err| {
                         io::Error::new(
@@ -308,7 +307,8 @@ impl Router {
 
                 Response::builder()
                     .status(StatusCode::OK)
-                    .header("XSRF-TOKEN", session_token)
+                    .header(SET_COOKIE, session_token.clone())
+                    .header("sam-token", session_token)
                     .body(Body::from(outgoing_json))
                     .map_err(|err| {
                         io::Error::new(
@@ -333,16 +333,8 @@ impl Router {
             })?.clone()
             .unwrap_or_else(AccessKey::dummy)
             .access_key;
-        /*
-            .map_or(|| {
-                io::Error::new(
-                    ErrorKind::Other,
-                    format!("Failed to map error on access key lock"),
-                )
-            })?.access_key;
-        */
 
-        let cookie: String = request
+        request
             .headers()
             .clone()
             .get(COOKIE)
@@ -354,9 +346,15 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to convert cookie to string: {}", err),
                 )
-            })?.to_string();
-
-        Ok(cookie == access_key)
+            })?.to_string()
+            .split("=")
+            .skip(1)
+            .next()
+            .map(|cookie| {
+                println!("cookie: {}\naccess_key: {}", access_key, cookie);
+                cookie == access_key
+            })
+            .ok_or_else(|| io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header"))
     }
 
     fn serve_static_file(
@@ -405,17 +403,12 @@ impl Router {
             Err(_err) => vec![PathBuf::from("404.html")],
         };
 
-        // add function to check whether cookie exists
-        // put third argument, function checking cookie and request.headers()
-        // add True/False for all match arms
-        //
-        let correct_cookie: bool = match self.check_header(&request) {
-            Ok(v) => v,
-            Err(err) => {
-                println!("{}", err);
-                false
-            }
-        };
+        let correct_cookie: bool = self.check_header(&request).unwrap_or_else(|err| {
+            println!("{}", err);
+            false
+        });
+
+        println!("{} {} {}", request.method(), request.uri().path(), correct_cookie);
 
         match (request.method(), request.uri().path(), correct_cookie) {
             (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
