@@ -1,3 +1,4 @@
+extern crate bcrypt;
 extern crate futures;
 extern crate hyper;
 extern crate hyper_staticfile;
@@ -7,14 +8,15 @@ extern crate rand;
 extern crate serde_json;
 extern crate toml;
 
-mod game;
+mod config;
 mod password;
 mod router;
 mod tests;
 
+use config::{Config, Game};
 use futures::Future;
-use game::{toml_to_hashmap, Game};
 use hyper::Server;
+use password::check_password;
 
 use std::collections::HashMap;
 use std::io;
@@ -22,16 +24,18 @@ use std::path::PathBuf;
 
 fn main() -> Result<(), io::Error> {
     // Read initial games toml config
-    let toml_filepath: PathBuf = ["test_files", "test_games.toml"].iter().collect();
+    let toml_filepath: PathBuf = ["server_config.toml"].iter().collect();
 
-    // Store games locally on server
-    let games: HashMap<String, Game> = toml_to_hashmap(&toml_filepath)?;
-
-    // put the games data into the router struct
-    let router = router::Router::new(games);
+    // Unpack config
+    let config: Config = Config::load(&toml_filepath)?;
 
     // Host server
-    let addr = ([127, 0, 0, 1], 3000).into();
+    let addr = ([127, 0, 0, 1], config.listen_port).into();
+
+    println!("Using assets directory: {:?}", config.static_dir);
+
+    // put the games data into the router struct
+    let router = router::Router::new(config);
 
     let server = Server::bind(&addr)
         .serve(router)

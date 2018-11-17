@@ -5,7 +5,8 @@
 <head>
   <link href="https://fonts.googleapis.com/css?family=Do+Hyeon" rel="stylesheet">
   <!--bootstrap-->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
   <!-- Vuejs -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -154,9 +155,12 @@
           this.$emit('close')
         },
         pwCheck: function () {
-          axios.post('http://localhost:8000', JSON.stringify({ password: this.pw }))
+          axios.post('http://127.0.0.1:3000/api/v1/check_password', JSON.stringify({ password: this.pw }))
             .then(function (response) {
-              if (response.data == 1) { window.location.href = 'index.html' }
+              if (response.data.success == true) { 
+                  document.cookie = `sam-token = ${response.headers["sam-token"]}`;
+                  window.location.href = 'games.html' 
+              }
               else { showModal.showModal = false }
             }).
             catch(function (error) {

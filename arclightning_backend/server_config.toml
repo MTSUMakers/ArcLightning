@@ -1,0 +1,18 @@
+listen_port = 3000
+static_dir = "..\\arclightning_frontend"
+password = "$2y$04$tj8uf.LvzrzRkiujk52aUeE/Xp2SKZu6z72Oym2IQXrPCdB9SEzUi"
+[games.melty_blood]
+name = "Melty Blood"
+description = "fighter with waifus"
+genres = ["fighter", "anime", "2d"]
+thumbnail_path = "images\\meltyBlood.png"
+exe_path = "test_files\\melty_blood_game.exe"
+exe_args = ["arg1", "arg2"]
+
+[games.touhou_123]
+name = "Touhou"
+description = "bullet hell with waifus"
+genres = ["bullet hell", "anime"]
+thumbnail_path = "images\\touhou.jpg"
+exe_path = "test_files\\touhou_game.exe"
+exe_args = ["arg1", "arg2"]
