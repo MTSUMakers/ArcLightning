@@ -81,10 +81,14 @@
     }
     .modal-header h3 {
         margin-top: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
         color: #0079C0;
     }
     .modal-body {
         margin: 20px 0;
+        text-align: center;
     }
     .text-right {
         text-align: right;
@@ -111,7 +115,7 @@
             <h3>Enter Password</h3>
           </div>
           <div class="modal-body">
-            <input type="password" placeholder="password" @keyup.enter="pwCheck" v-model="pw" />
+            <input type="password" id="password" size=16 placeholder="password" @keyup.enter="pwCheck" v-model="pw" />
           </div>
         </div>
       </div>
@@ -175,6 +179,7 @@
             this.close()
           } else {
             showModal.showModal = true
+            setTimeout(function() { document.getElementById("password").focus() }, 1)
           }
         })
       }
