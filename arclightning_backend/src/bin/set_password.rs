@@ -20,7 +20,6 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
 
-
 use arclightning_backend::config::{Config, Game};
 use std::io;
 use std::path::PathBuf;
@@ -33,7 +32,7 @@ fn main() -> Result<(), io::Error> {
 
     let mut pass: String = "a".to_owned();
     let mut pass_check: String = "b".to_owned();
-    while pass != pass_check{
+    while pass != pass_check {
         pass = rpassword::prompt_password_stdout("Enter new password: ")?;
         pass_check = rpassword::prompt_password_stdout("Re-type password: ")?;
     }

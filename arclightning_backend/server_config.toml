@@ -5,7 +5,7 @@ password = "$2y$04$tj8uf.LvzrzRkiujk52aUeE/Xp2SKZu6z72Oym2IQXrPCdB9SEzUi"
 name = "Melty Blood"
 description = "fighter with waifus"
 genres = ["fighter", "anime", "2d"]
-thumbnail_path = "path/to/melty_blood/thumbnail"
+thumbnail_path = "images\\meltyBlood.png"
 exe_path = "test_files\\melty_blood_game.exe"
 exe_args = ["arg1", "arg2"]
 
@@ -13,6 +13,6 @@ exe_args = ["arg1", "arg2"]
 name = "Touhou"
 description = "bullet hell with waifus"
 genres = ["bullet hell", "anime"]
-thumbnail_path = "path/to/touhou/thumbnail"
+thumbnail_path = "images\\touhou.jpg"
 exe_path = "test_files\\touhou_game.exe"
 exe_args = ["arg1", "arg2"]
