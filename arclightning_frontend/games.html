@@ -131,10 +131,11 @@
         },
         methods: {
             sendSelectedGame: function () {
-                var gameSelected = this.items[this.selectedIndex].name
-                alert("You chose: " + gameSelected) // remove this line once next line is updated
-                // this needs to be updated to match the endpoint for game selection
-                // axios.post('http://127.0.0.1:3000', { id: gameSelected })
+                // obtains the game_id, stored initially as the key in this.results
+                var gameSelected = Object.keys(this.results)[this.selectedIndex]
+                //alert("You chose: " + gameSelected) // remove this line once next line is updated
+                // send start game request to corresponding endpoint for game selection
+                axios.post('http://127.0.0.1:3000/api/v1/start_game', { id: gameSelected })
             },
             qrGen: function (hostname) {
                 this.qrStr = '', this.ranHex = ''
@@ -147,19 +148,23 @@
             onKeyUp(event) {
                 var ids = Object.keys(this.items)
                 switch (event.key) {
-                    case "l":
+                    case "Backspace":
+                    case "k":
                         window.location.href = 'demonstration.html'
                         break
+                    case "w":
                     case "ArrowUp":
                         var active = this.selectedIndex - 1
                         if (active < 0) { active = this.items.length - 1 }
                         this.activateImage(active)
                         break
+                    case "s":
                     case "ArrowDown":
                         var active = this.selectedIndex + 1
                         if (active >= this.items.length) { active = 0 }
                         this.activateImage(active)
                         break
+                    case "j":
                     case "Enter":
                         this.sendSelectedGame()
                         break
