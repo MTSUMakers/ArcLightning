@@ -230,9 +230,18 @@ impl Router {
                     })?;
 
                     let exe_path = game.exe_path.clone();
-                    let exe_args = game.exe_args.clone();
 
-                    Command::new(exe_path).args(exe_args).spawn()?;
+                    /*
+                     *
+                     * Skipping additional arguments for now
+                     */
+
+                    //let exe_args = game.exe_args.clone();
+                    //Command::new(exe_path).args(exe_args).spawn()?;
+                    
+                    println!("Starting game: {}", request_body.id);
+                    Command::new(exe_path).spawn()?;
+
 
                     Response::builder()
                         .status(StatusCode::OK)
@@ -351,7 +360,6 @@ impl Router {
             .skip(1)
             .next()
             .map(|cookie| {
-                println!("cookie: {}\naccess_key: {}", access_key, cookie);
                 cookie == access_key
             })
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header"))
@@ -375,7 +383,7 @@ impl Router {
         );
 
         if requested_path == root {
-            *request.uri_mut() = hyper::Uri::from_static("/index.html");
+            *request.uri_mut() = hyper::Uri::from_static("/start.html");
         } else if !valid_files.contains(&requested_path) {
             *request.uri_mut() = hyper::Uri::from_static("/404.html");
         }
@@ -404,7 +412,7 @@ impl Router {
         };
 
         let correct_cookie: bool = self.check_header(&request).unwrap_or_else(|err| {
-            println!("{}", err);
+            //println!("{}", err);
             false
         });
 

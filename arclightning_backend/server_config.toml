@@ -1,18 +1,26 @@
 listen_port = 3000
 static_dir = "..\\arclightning_frontend"
 password = "$2y$04$tj8uf.LvzrzRkiujk52aUeE/Xp2SKZu6z72Oym2IQXrPCdB9SEzUi"
-[games.melty_blood]
-name = "Melty Blood"
-description = "fighter with waifus"
-genres = ["fighter", "anime", "2d"]
-thumbnail_path = "images\\meltyBlood.png"
-exe_path = "test_files\\melty_blood_game.exe"
+[games.tekken_7]
+name = "Tekken 7"
+description = "Newest version of an arcade classic."
+genres = ["fighter", "classic", "3d", "fists"]
+thumbnail_path = "images\\tekken7.png"
+exe_path = "D:\\Steam\\steamapps\\common\\TEKKEN 7\\TEKKEN 7.exe"
 exe_args = ["arg1", "arg2"]
 
-[games.touhou_123]
-name = "Touhou"
-description = "bullet hell with waifus"
-genres = ["bullet hell", "anime"]
-thumbnail_path = "images\\touhou.jpg"
-exe_path = "test_files\\touhou_game.exe"
+[games.soul_calibur_6]
+name = "Soul Calibur 6"
+description = "Like Tekken but with weapons"
+genres = ["fighter", "classic", "3d", "weapons"]
+thumbnail_path = "images\\soulcalibur-vi.png"
+exe_path = "D:\\Steam\\steamapps\\common\\SoulcaliburVI\\SoulcaliburVI\\Binaries\\Win64\\SoulcaliburVI.exe"
+exe_args = ["arg1", "arg2"]
+
+[games.bbtag]
+name = "BlazBlue Cross Tag Battle"
+description = "rwby.  Also I guess some other franchises."
+genres = ["rwby", "fighter", "anime", "2d"]
+thumbnail_path = "images\\bbtag.jpg"
+exe_path = "D:\\Steam\\steamapps\\common\\BBTAG\\BBTAG.exe"
 exe_args = ["arg1", "arg2"]
