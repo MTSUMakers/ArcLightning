@@ -1,5 +1,5 @@
 listen_port = 3000
-static_dir = "..\\arclightning_frontend"
+static_dir = "../arclightning_frontend"
 password = "$2y$04$RNzRQu2G0CeZACdaT/XeeeWp/c2nSZwnC15C9sM3MULDuT0NHJ1o6"
 [games.touhou]
 name = "Touhou 14"
@@ -32,8 +32,6 @@ genres = ["rwby", "fighter", "anime", "2d"]
 thumbnail_path = "images\\bbtag.jpg"
 exe_path = "D:\\Steam\\steamapps\\common\\BBTAG\\BBTAG.exe"
 exe_args = ["arg1", "arg2"]
-<<<<<<< HEAD
-=======
 
 [games.soul_calibur_6]
 name = "Soul Calibur 6"
@@ -50,4 +48,3 @@ genres = ["fighter", "classic", "3d", "fists"]
 thumbnail_path = "images\\tekken7.png"
 exe_path = "D:\\Steam\\steamapps\\common\\TEKKEN 7\\TEKKEN 7.exe"
 exe_args = ["arg1", "arg2"]
->>>>>>> f8259ff238b66eac4e54a988905a7df3a3b34a46
