@@ -125,7 +125,8 @@ impl Router {
                             ),
                         )
                     })
-            }).and_then(future::result);
+            })
+            .and_then(future::result);
 
         Box::new(response)
     }
@@ -176,9 +177,11 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to acquire mutex on games list: {}", err),
                 )
-            }).and_then(|games| {
+            })
+            .and_then(|games| {
                 serde_json::to_string(&*games).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).map(Body::from)
+            })
+            .map(Body::from)
         {
             Ok(v) => (v, StatusCode::OK),
             Err(_e) => (
@@ -211,9 +214,11 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err),
                 )
-            }).and_then(|body| {
+            })
+            .and_then(|body| {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).and_then(move |request_body: StartGameRequest| {
+            })
+            .and_then(move |request_body: StartGameRequest| {
                 let games = games.lock().map_err(|_e| {
                     io::Error::new(
                         ErrorKind::Other,
@@ -236,12 +241,11 @@ impl Router {
                      * Skipping additional arguments for now
                      */
 
-                    //let exe_args = game.exe_args.clone();
-                    //Command::new(exe_path).args(exe_args).spawn()?;
-                    
-                    println!("Starting game: {}", request_body.id);
-                    Command::new(exe_path).spawn()?;
+                    let exe_args = game.exe_args.clone();
+                    Command::new(exe_path).args(exe_args).spawn()?;
 
+                    println!("Starting game: {}", request_body.id);
+                    //Command::new(exe_path).spawn()?;
 
                     Response::builder()
                         .status(StatusCode::OK)
@@ -253,7 +257,8 @@ impl Router {
                             )
                         })
                 })
-            }).flatten();
+            })
+            .flatten();
         Box::new(response)
     }
 
@@ -274,9 +279,11 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to parse byte string: {}", err),
                 )
-            }).and_then(|body| {
+            })
+            .and_then(|body| {
                 serde_json::from_slice(&body).map_err(|err| io::Error::new(ErrorKind::Other, err))
-            }).and_then(move |request_body: PasswordRequest| {
+            })
+            .and_then(move |request_body: PasswordRequest| {
                 let password = request_body.password.clone();
 
                 // 64 random bytes encoded as hex and stored as a string
@@ -307,7 +314,8 @@ impl Router {
                                         ErrorKind::Other,
                                         format!("Time went backwards: {}", err),
                                     )
-                                })?.as_secs(),
+                                })?
+                                .as_secs(),
                         ));
                         r#"{"success":true}"#.to_owned()
                     } else {
@@ -339,7 +347,8 @@ impl Router {
                     ErrorKind::Other,
                     format!("Failed to acquire mutex on access key: {}", err),
                 )
-            })?.clone()
+            })?
+            .clone()
             .unwrap_or_else(AccessKey::dummy)
             .access_key;
 
@@ -349,19 +358,19 @@ impl Router {
             .get(COOKIE)
             .ok_or_else(|| {
                 io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header")
-            })?.to_str()
+            })?
+            .to_str()
             .map_err(|err| {
                 io::Error::new(
                     ErrorKind::Other,
                     format!("Failed to convert cookie to string: {}", err),
                 )
-            })?.to_string()
+            })?
+            .to_string()
             .split("=")
             .skip(1)
             .next()
-            .map(|cookie| {
-                cookie == access_key
-            })
+            .map(|cookie| cookie == access_key)
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Failed to acquire cookie from header"))
     }
 
@@ -398,7 +407,8 @@ impl Router {
                             format!("An error occured when building a response: {}", err),
                         )
                     })
-            }).and_then(future::result);
+            })
+            .and_then(future::result);
 
         Box::new(response)
     }
@@ -416,7 +426,12 @@ impl Router {
             false
         });
 
-        println!("{} {} {}", request.method(), request.uri().path(), correct_cookie);
+        println!(
+            "{} {} {}",
+            request.method(),
+            request.uri().path(),
+            correct_cookie
+        );
 
         match (request.method(), request.uri().path(), correct_cookie) {
             (&Method::GET, "/api/v1/list_games", true) => self.list_games(),
