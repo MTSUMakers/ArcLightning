@@ -1,5 +1,5 @@
 listen_port = 3000
-static_dir = "..\\arclightning_frontend"
+static_dir = "../arclightning_frontend"
 password = "$2y$04$tj8uf.LvzrzRkiujk52aUeE/Xp2SKZu6z72Oym2IQXrPCdB9SEzUi"
 [games.tekken_7]
 name = "Tekken 7"
