@@ -1,5 +1,5 @@
 listen_port = 3000
-static_dir = "../arclightning_frontend"
+static_dir = "..\\arclightning_frontend"
 password = "$2y$04$RNzRQu2G0CeZACdaT/XeeeWp/c2nSZwnC15C9sM3MULDuT0NHJ1o6"
 [games.touhou]
 name = "Touhou 14"
