@@ -1,12 +1,36 @@
 listen_port = 3000
 static_dir = "..\\arclightning_frontend"
-password = "$2y$04$tj8uf.LvzrzRkiujk52aUeE/Xp2SKZu6z72Oym2IQXrPCdB9SEzUi"
-[games.tekken_7]
-name = "Tekken 7"
-description = "Newest version of an arcade classic."
-genres = ["fighter", "classic", "3d", "fists"]
-thumbnail_path = "images\\tekken7.png"
-exe_path = "D:\\Steam\\steamapps\\common\\TEKKEN 7\\TEKKEN 7.exe"
+password = "$2y$04$RNzRQu2G0CeZACdaT/XeeeWp/c2nSZwnC15C9sM3MULDuT0NHJ1o6"
+[games.touhou]
+name = "Touhou 14"
+description = "Touhouuuuuuuu"
+genres = ["bullet hell", "anime", "2d"]
+thumbnail_path = "images\\touhou.png"
+exe_path = "C:\\Users\\Sam\\Downloads\\Touhou 14 - Double-Dealing Character\\th14e.exe"
+exe_args = ["arg1", "arg2"]
+
+[games.guiltygear]
+name = "Guilty Gear "
+description = "ultra style fighter"
+genres = ["style", "fighter", "anime", "2d"]
+thumbnail_path = "images\\gg.png"
+exe_path = "D:\\Steam\\steamapps\\common\\GUILTY GEAR Xrd -REVELATOR-\\Binaries\\Win32\\GuiltyGearXrd.exe"
+exe_args = ["arg1", "arg2"]
+
+[games.meltyblood]
+name = "Melty Blood"
+description = "schoolgirl waifu fighter"
+genres = ["vampire", "fighter", "anime", "2d"]
+thumbnail_path = "images\\meltyblood.jpg"
+exe_path = "D:\\Steam\\steamapps\\common\\MELTY BLOOD Actress Again Current Code\\MBAA.exe"
+exe_args = ["arg1", "arg2"]
+
+[games.bbtag]
+name = "BlazBlue Cross Tag Battle"
+description = "rwby.  Also I guess some other franchises."
+genres = ["rwby", "fighter", "anime", "2d"]
+thumbnail_path = "images\\bbtag.jpg"
+exe_path = "D:\\Steam\\steamapps\\common\\BBTAG\\BBTAG.exe"
 exe_args = ["arg1", "arg2"]
 
 [games.soul_calibur_6]
@@ -17,10 +41,10 @@ thumbnail_path = "images\\soulcalibur-vi.png"
 exe_path = "D:\\Steam\\steamapps\\common\\SoulcaliburVI\\SoulcaliburVI\\Binaries\\Win64\\SoulcaliburVI.exe"
 exe_args = ["arg1", "arg2"]
 
-[games.bbtag]
-name = "BlazBlue Cross Tag Battle"
-description = "rwby.  Also I guess some other franchises."
-genres = ["rwby", "fighter", "anime", "2d"]
-thumbnail_path = "images\\bbtag.jpg"
-exe_path = "D:\\Steam\\steamapps\\common\\BBTAG\\BBTAG.exe"
+[games.tekken_7]
+name = "Tekken 7"
+description = "Newest version of an arcade classic."
+genres = ["fighter", "classic", "3d", "fists"]
+thumbnail_path = "images\\tekken7.png"
+exe_path = "D:\\Steam\\steamapps\\common\\TEKKEN 7\\TEKKEN 7.exe"
 exe_args = ["arg1", "arg2"]
