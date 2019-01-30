@@ -241,11 +241,13 @@ impl Router {
                      * Skipping additional arguments for now
                      */
 
-                    let exe_args = game.exe_args.clone();
-                    Command::new(exe_path).args(exe_args).spawn()?;
+                    //let exe_args = game.exe_args.clone();
+                    //Command::new(exe_path).args(exe_args).spawn()?;
 
                     println!("Starting game: {}", request_body.id);
-                    //Command::new(exe_path).spawn()?;
+                    Command::new(exe_path.clone())
+                        .current_dir(exe_path.parent().unwrap())
+                        .spawn()?;
 
                     Response::builder()
                         .status(StatusCode::OK)
